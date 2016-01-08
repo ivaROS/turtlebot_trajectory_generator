@@ -13,16 +13,33 @@
 
 #include <boost/numeric/odeint.hpp>
 #include "near_identity.hpp"
+#include <functional>
 
 
-/* The rhs of x' = f(x) */
-void traj_func( const state_type &x , state_type &dxdt , const double /* t */ )
-{
-    dxdt[6] = 1;
-    dxdt[7] = std::sin(t);
-}
+//[ rhs_function
+/* The type of container used to hold the state vector */
+typedef std::vector< double > state_type;
+
+
+//[ rhs_class
+/* The rhs of x' = f(x) defined as a class */
+class traj_gen {
+
+    double m_amp;
+    double m_f;
+
+public:
+    traj_gen( double amp, double f ) : m_amp(amp), m_f(f) { }
+
+    void operator() ( const state_type &x , state_type &dxdt , const double  t  )
+    {
+        dxdt[6] = 1;
+        dxdt[7] = std::sin(t*2.0*3.14*m_f) * m_amp;
+    }
+};
 //]
- 
+
+
 
 
 //[ rhs_class
@@ -42,7 +59,7 @@ public:
         nif_(x,dxdt,t);
     }
 };
-//]
+
 
 
 
@@ -65,13 +82,6 @@ struct push_back_state_and_time
 };
 //]
 
-struct write_state
-{
-    void operator()( const state_type &x ) const
-    {
-        std::cout << x[0] << "\t" << x[1] << "\n";
-    }
-};
 
 
 int main(int /* argc */ , char** /* argv */ )
@@ -81,49 +91,60 @@ int main(int /* argc */ , char** /* argv */ )
 
 
     //[ state_initialization
-    state_type x(8);  //x,y,theta,v,w,lambda, xd,yd
-    x[0] = 0.0; // start at x=1.0, p=0.0
-    x[1] = 0.0;
-    x[2] = 0.0;
-    x[3] = 0.0;
-    x[4] = 0.0;
-    x[5] = 0.0;
-    x[6] = 0.0;
-    x[7] = 0.0;
+    state_type x0(2);
+    x0[0] = 0.0; // start at x=1.0, p=0.0
+    x0[1] = 0.0;
     //]
-
-
-
-  
-
-
-    //[ integration_class
     
-    //void (*traj)( const state_type , state_type , const double );
-    //traj = &
-    near_identity ni(-1,-1,-1,-.5);
-    ni_controller ho(ni, &traj_func);
+    const double t0 = 0.0;
+    const double tf = 21.0;
+    const double observer_dt = 5.0;
+
+    state_type x = x0;
     
-    
-    steps = integrate( ho ,
-            x , 0.0 , 20.0 , 0.1 );
-    //]
 
-    std::cout<< "Class version"  << steps << " steps" << std::endl;
-
-
-
-
-    //[ integrate_observ
+    //[ Observer samples
     vector<state_type> x_vec;
     vector<double> times;
+    
+    size_t steps;
 
-    steps = integrate( harmonic_oscillator ,
-            x , 0.0 , 20.0 , 0.1 ,
-            push_back_state_and_time( x_vec , times ) );
+    x_vec.clear();
+    times.clear();
 
-    std::cout<< "Class with observations"  << steps << " steps" << std::endl;
+    double abs_err = 1.0e-10 , rel_err = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
+    
+    
+    traj_gen traj(0.15,.1);
+    near_identity ni(-1,-1,-1,-.5);
+    
+    std::function<void(state_type, state_type, double)> trajf;
+    std::function<void(state_type, state_type, double)> nif;
 
+    trajf = std::bind(&traj_gen::operator(), traj);
+    nif = std::bind(&near_identity::operator(), ni);
+
+    ni_controller ho(ni, nif);
+    
+    x = x0;
+
+
+
+    {
+     typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
+    typedef controlled_runge_kutta< error_stepper_type > controlled_stepper_type;
+    controlled_stepper_type controlled_stepper( 
+        default_error_checker< double , range_algebra , default_operations >( abs_err , rel_err , a_x , a_dxdt ) );
+
+
+
+    //[ equidistant observer calls with adaptive internal step size:
+    steps = integrate_const( controlled_stepper , ho , x , t0, tf, observer_dt, push_back_state_and_time( x_vec , times ) );
+    
+    }
+
+
+    std::cout<< "const observer: "  << steps << " steps; final: " << '\t' << x[0] << '\t' << x[1]<< std::endl;
     /* output */
     for( size_t i=0; i<=steps; i++ )
     {
@@ -134,86 +155,6 @@ int main(int /* argc */ , char** /* argv */ )
 
 
 
-
-
-
-    //[ define_const_stepper
-    runge_kutta4< state_type > stepper;
-    integrate_const( stepper , harmonic_oscillator , x , 0.0 , 20.0 , 0.01 );
-    //]
-
-    std::cout<< "const stepper"  << steps << " steps" << std::endl;
-
-
-    //[ integrate_const_loop
-    const double dt = 0.01;
-    for( double t=0.0 ; t<20.0 ; t+= dt )
-        stepper.do_step( harmonic_oscillator , x , t , dt );
-    //]
-
-    std::cout<< "const stepper"  << steps << " steps" << std::endl;
-
-
-
-
-    //[ define_adapt_stepper
-    typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
-    //]
-
-
-
-    //[ integrate_adapt
-    typedef controlled_runge_kutta< error_stepper_type > controlled_stepper_type;
-    controlled_stepper_type controlled_stepper;
-    integrate_adaptive( controlled_stepper , harmonic_oscillator , x , 0.0 , 20.0 , 0.01 );
-    //]
-
-    {
-    //[integrate_adapt_full
-    double abs_err = 1.0e-10 , rel_err = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
-    controlled_stepper_type controlled_stepper( 
-        default_error_checker< double , range_algebra , default_operations >( abs_err , rel_err , a_x , a_dxdt ) );
-    integrate_adaptive( controlled_stepper , harmonic_oscillator , x , 0.0 , 20.0 , 0.01 );
-    //]
-    }
-    std::cout<< "adaptive version"  << std::endl;
-
-
-
-    //[integrate_adapt_make_controlled
-    integrate_adaptive( make_controlled< error_stepper_type >( 1.0e-10 , 1.0e-6 ) , 
-                        harmonic_oscillator , x , 0.0 , 10.0 , 0.01 );
-    //]
-
-    std::cout<< "controlled version"  << std::endl;
-
-
-
-    //[integrate_adapt_make_controlled_alternative
-    integrate_adaptive( make_controlled( 1.0e-10 , 1.0e-6 , error_stepper_type() ) , 
-                        harmonic_oscillator , x , 0.0 , 10.0 , 0.01 );
-    //]
-
-    #ifdef BOOST_NUMERIC_ODEINT_CXX11
-    //[ define_const_stepper_cpp11
-    {
-    runge_kutta4< state_type > stepper;
-    integrate_const( stepper , []( const state_type &x , state_type &dxdt , double t ) {
-            dxdt[0] = x[1]; dxdt[1] = -x[0] - gam*x[1]; }
-        , x , 0.0 , 10.0 , 0.01 );
-    }
-    //]
-    
-    
-    
-    //[ harm_iterator_const_step]
-    std::for_each( make_const_step_time_iterator_begin( stepper , harmonic_oscillator, x , 0.0 , 0.1 , 10.0 ) ,
-                   make_const_step_time_iterator_end( stepper , harmonic_oscillator, x ) ,
-                   []( std::pair< const state_type & , const double & > x ) {
-                       cout << x.second << " " << x.first[0] << " " << x.first[1] << "\n"; } );
-    //]
-    #endif
-    
     
 
 
