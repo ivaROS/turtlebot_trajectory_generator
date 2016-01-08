@@ -13,7 +13,7 @@
 
 #include <boost/numeric/odeint.hpp>
 #include "near_identity.hpp"
-#include <functional>
+
 
 
 //[ rhs_function
@@ -46,17 +46,17 @@ public:
 /* The rhs of x' = f(x) defined as a class */
 class ni_controller {
 
-    void (*nif_)(state_type, state_type, double);
-    void (*trajf_)(state_type, state_type, double);
+    near_identity ni_;
+    traj_gen traj_;
     
 
 public:
-    ni_controller( void (*nif)(state_type, state_type, double), void (*trajf)(state_type, state_type, double)) :  nif_(nif), trajf_(trajf) { }
+    ni_controller( near_identity ni, traj_gen traj) :  ni_(ni), traj_(traj) { }
 
     void operator() ( const state_type &x , state_type &dxdt , const double  t  )
     {
-        trajf_(x,dxdt,t);
-        nif_(x,dxdt,t);
+        traj_(x,dxdt,t);
+        ni_(x,dxdt,t);
     }
 };
 
@@ -91,9 +91,15 @@ int main(int /* argc */ , char** /* argv */ )
 
 
     //[ state_initialization
-    state_type x0(2);
+    state_type x0(8);  //x,y,theta,v,w,lambda, xd,yd
     x0[0] = 0.0; // start at x=1.0, p=0.0
     x0[1] = 0.0;
+    x0[2] = 0.0;
+    x0[3] = 0.0;
+    x0[4] = 0.0;
+    x0[5] = 0.0;
+    x0[6] = 0.0;
+    x0[7] = 0.0;
     //]
     
     const double t0 = 0.0;
@@ -114,17 +120,10 @@ int main(int /* argc */ , char** /* argv */ )
 
     double abs_err = 1.0e-10 , rel_err = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
     
-    
-    traj_gen traj(0.15,.1);
     near_identity ni(-1,-1,-1,-.5);
+    traj_gen traj(0.15,.1);
     
-    std::function<void(state_type, state_type, double)> trajf;
-    std::function<void(state_type, state_type, double)> nif;
-
-    trajf = std::bind(&traj_gen::operator(), traj);
-    nif = std::bind(&near_identity::operator(), ni);
-
-    ni_controller ho(ni, nif);
+    ni_controller ho(ni, traj);
     
     x = x0;
 
