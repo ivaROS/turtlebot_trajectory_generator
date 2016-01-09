@@ -92,11 +92,11 @@ int main(int /* argc */ , char** /* argv */ )
 
     //[ state_initialization
     state_type x0(8);  //x,y,theta,v,w,lambda, xd,yd
-    x0[0] = 0.0; // start at x=1.0, p=0.0
-    x0[1] = 0.0;
-    x0[2] = 0.0;
-    x0[3] = 0.0;
-    x0[4] = 0.0;
+    x0[0] = -2.0; // start at x=1.0, p=0.0
+    x0[1] = 4.0;
+    x0[2] = 2.5;
+    x0[3] = 0.3;
+    x0[4] = 0.5;
     x0[5] = 0.5;
     x0[6] = 0.0;
     x0[7] = 0.0;
