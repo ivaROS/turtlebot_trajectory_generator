@@ -97,14 +97,14 @@ int main(int /* argc */ , char** /* argv */ )
     x0[2] = 0.0;
     x0[3] = 0.0;
     x0[4] = 0.0;
-    x0[5] = 0.0;
+    x0[5] = 0.5;
     x0[6] = 0.0;
     x0[7] = 0.0;
     //]
     
     const double t0 = 0.0;
     const double tf = 21.0;
-    const double observer_dt = 5.0;
+    const double observer_dt = 1.0;
 
     state_type x = x0;
     
@@ -120,7 +120,7 @@ int main(int /* argc */ , char** /* argv */ )
 
     double abs_err = 1.0e-10 , rel_err = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
     
-    near_identity ni(-1,-1,-1,-.5);
+    near_identity ni(1,2,1,.01);
     traj_gen traj(0.15,.1);
     
     ni_controller ho(ni, traj);
@@ -145,9 +145,17 @@ int main(int /* argc */ , char** /* argv */ )
 
     std::cout<< "const observer: "  << steps << " steps; final: " << '\t' << x[0] << '\t' << x[1]<< std::endl;
     /* output */
+    std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << 'x' << '\t' << 'y' << std::endl;
+    
     for( size_t i=0; i<=steps; i++ )
     {
-        cout << times[i] << '\t' << x_vec[i][0] << '\t' << x_vec[i][1] << '\n';
+        double error_x = x_vec[i][0] - x_vec[i][6];
+        double error_y = x_vec[i][1] - x_vec[i][7];
+        
+        double error = std::sqrt(error_x*error_x + error_y*error_y);
+        printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", times[i], error, x_vec[i][0], x_vec[i][1], x_vec[i][2], x_vec[i][3], x_vec[i][4], x_vec[i][5], x_vec[i][6], x_vec[i][7]);
+        
+        //cout << times[i] << '\t' << x_vec[i][0] << '\t' << x_vec[i][1] << "\t\t" << x_vec[i][2]<< "\t\t" << x_vec[i][3]<< "\t\t" << x_vec[i][4]<< '\t' << x_vec[i][5]<< '\t' << x_vec[i][6]<< '\t' << x_vec[i][7] << '\n';
     }
     //]
 

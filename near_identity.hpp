@@ -22,6 +22,28 @@ public:
         double w = state[4];
         double lambda = state[5];
 
+/*
+std::cout << "cur state:[" << 
+    state[0] << ", " << 
+    state[1] << ", " << 
+    state[2] << ", " <<
+    state[3] << ", " <<
+    state[4] << ", " <<
+    state[5] << ", " <<
+    state[6] << ", " <<
+    state[7] << "]" << std::endl;
+    
+    std::cout << "state_dot:[" << 
+    state_dot[0] << ", " << 
+    state_dot[1] << ", " << 
+    state_dot[2] << ", " <<
+    state_dot[3] << ", " <<
+    state_dot[4] << ", " <<
+    state_dot[5] << ", " <<
+    state_dot[6] << ", " <<
+    state_dot[7] << "]" << std::endl;
+
+*/
 
         /*Compute desired characteristics of path for this time
         x_d = f_t(t);
@@ -74,25 +96,29 @@ public:
         //q = xy + lambda*R*e1;
     /*    Eigen::Vector2d q(x + lambda*R(0,0), 
                           y + lambda*R(1,0)); */
-        Eigen::Vector2d q = xy + lambda*R.col(0);                       
-
+        Eigen::Vector2d q = xy + lambda*R.col(0);     
+                          
+     //   std::cout << "q: " << q(0) << ", " << q(1) << std::endl;
+        
         //p = R_lambda*v + lambda_dot*R_lambda*e1;
      /*   Eigen::Vector2d p(v + lambda_dot*R_lambda(0,0), 
                           w + lambda_dot*R_lambda(1,0));*/
 
-        Eigen::Vector2d p = vw + lambda_dot*R_lambda.col(0);
+        Eigen::Vector2d p = R_lambda*vw + lambda_dot*R_lambda.col(0);
 
-        
+     //   std::cout << "p: " << p(0) << ", " << p(1) << std::endl;
         
         
         //u can be any expression that will feedback stabilize a linear system
         //here, using 2nd order feedback controller   ; + x_d_dot_dot
         Eigen::Vector2d u = -c_p_*(q - xy_d) - c_d_*(p - xy_d_dot);
 
+   //     std::cout << "u: " << u(0) << ", " << u(1) << std::endl;
 
         //Now find tau
         Eigen::Vector2d tau = R_lambda_inv*u - w_hat*vw - lambda_dot*(w_hat - c_lambda_*Eigen::Matrix2d::Identity())*Eigen::Matrix<double, 2, 1>::Identity();
 
+    //    std::cout << "tau: " << tau(0) << ", " << tau(1) << std::endl;
 
         //Now find derivatives of state variables
         //x_dot = (R*e1)*v1;
