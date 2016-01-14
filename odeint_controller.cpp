@@ -12,7 +12,8 @@
 #include <vector>
 
 #include <boost/numeric/odeint.hpp>
-#include "near_identity.hpp"
+#include "near_identity.h"
+#include <chrono>
 
 
 
@@ -90,21 +91,21 @@ int main(int /* argc */ , char** /* argv */ )
     using namespace boost::numeric::odeint;
 
 
-    //[ state_initialization
-    state_type x0(8);  //x,y,theta,v,w,lambda, xd,yd
-    x0[0] = -2.0; // start at x=1.0, p=0.0
-    x0[1] = 4.0;
-    x0[2] = 2.5;
-    x0[3] = 0.3;
-    x0[4] = 0.5;
-    x0[5] = 0.5;
-    x0[6] = 0.0;
-    x0[7] = 0.0;
+    //[ initial state
+    state_type x0(8); 
+    x0[0] = 0.0; //x
+    x0[1] = 0.0; //y
+    x0[2] = 0.0; //theta
+    x0[3] = 0.0; //v
+    x0[4] = 0.0; //w
+    x0[5] = 1.0; //lambda: must be > 0!
+    x0[6] = 0.0; //x_d
+    x0[7] = 0.0; //y_d
     //]
     
     const double t0 = 0.0;
     const double tf = 21.0;
-    const double observer_dt = 1.0;
+    const double observer_dt = .1;
 
     state_type x = x0;
     
@@ -120,14 +121,18 @@ int main(int /* argc */ , char** /* argv */ )
 
     double abs_err = 1.0e-10 , rel_err = 1.0e-6 , a_x = 1.0 , a_dxdt = 1.0;
     
-    near_identity ni(1,2,1,.01);
+    near_identity ni(100,100,100,.01);
     traj_gen traj(0.15,.1);
     
     ni_controller ho(ni, traj);
     
+
+
+    //How long does the integration take? Get current time
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+
     x = x0;
-
-
 
     {
      typedef runge_kutta_cash_karp54< state_type > error_stepper_type;
@@ -141,6 +146,13 @@ int main(int /* argc */ , char** /* argv */ )
     steps = integrate_const( controlled_stepper , ho , x , t0, tf, observer_dt, push_back_state_and_time( x_vec , times ) );
     
     }
+    
+    //How long did it take? 
+    //Stop the clock before all of the printouts
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+    std::cout << "Integration took " << fp_ms.count() << " ms\n";
+
 
 
     std::cout<< "const observer: "  << steps << " steps; final: " << '\t' << x[0] << '\t' << x[1]<< std::endl;
