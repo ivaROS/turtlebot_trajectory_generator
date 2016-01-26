@@ -1,5 +1,8 @@
 #include <Eigen/Eigen>
 
+#ifndef NEAR_IDENTITY_H
+#define NEAR_IDENTITY_H
+
 typedef std::vector< double > state_type;
 
 class near_identity {
@@ -140,4 +143,5 @@ std::cout << "cur state:[" <<
 };
 
 
+#endif  /* !near_identity.h sen */
 
