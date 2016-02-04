@@ -5,6 +5,16 @@
 
 typedef std::vector< double > state_type;
 
+
+#define X_IND 0
+#define Y_IND 1
+#define THETA_IND 2
+#define V_IND 3
+#define W_IND 4
+#define LAMBDA_IND 5
+#define XD_IND 6
+#define YD_IND 7
+
 class near_identity {
 
     double c_p_;
@@ -18,12 +28,12 @@ public:
     void operator() ( const state_type &state , state_type &state_dot, const double /* t*/  )
     {
         //load state variables
-        double x = state[0];
-        double y = state[1];
-        double theta = state[2];
-        double v = state[3];
-        double w = state[4];
-        double lambda = state[5];
+        double x = state[X_IND];
+        double y = state[Y_IND];
+        double theta = state[THETA_IND];
+        double v = state[V_IND];
+        double w = state[W_IND];
+        double lambda = state[LAMBDA_IND];
 
 /*
 std::cout << "cur state:[" << 
@@ -53,10 +63,10 @@ std::cout << "cur state:[" <<
         x_d_dot = f_dot_t(t);
         */
 
-        double x_d = state[6];
-        double y_d = state[7];
-        double x_d_dot = state_dot[6];
-        double y_d_dot = state_dot[7];
+        double x_d = state[XD_IND];
+        double y_d = state[YD_IND];
+        double x_d_dot = state_dot[XD_IND];
+        double y_d_dot = state_dot[YD_IND];
 
         Eigen::Vector2d xy;
         xy << x,
@@ -131,12 +141,12 @@ std::cout << "cur state:[" <<
         double w_dot = tau(1);
         double theta_dot = w;
 
-        state_dot[0] = x_dot;
-        state_dot[1] = y_dot;
-        state_dot[2] = theta_dot;
-        state_dot[3] = v_dot;
-        state_dot[4] = w_dot;
-        state_dot[5] = lambda_dot;
+        state_dot[X_IND] = x_dot;
+        state_dot[Y_IND] = y_dot;
+        state_dot[THETA_IND] = theta_dot;
+        state_dot[V_IND] = v_dot;
+        state_dot[W_IND] = w_dot;
+        state_dot[LAMBDA_IND] = lambda_dot;
         //std::vector<double> state_dot = {x_dot, y_dot, theta_dot, v_dot, w_dot, lambda_dot};
 
     }
