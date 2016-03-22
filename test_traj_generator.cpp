@@ -1,6 +1,7 @@
 #include "traj_generator.h"
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <chrono>
 #include <math.h>
@@ -26,7 +27,7 @@ public:
 
 
 
-int main(int /* argc */ , char** /* argv */ )
+int main(int  argc  , char**  argv  )
 {
     using namespace std;
 
@@ -63,11 +64,24 @@ int main(int /* argc */ , char** /* argv */ )
     
     size_t steps;
 
+    traj_params params = trajectory_gen.getDefaultParams();
+    if(argc==2)
+    {
+
+      istringstream ss(argv[1]);
+      double tf;
+      if (!(ss >> tf))
+          cerr << "Invalid number " << argv[1] << '\n';
+      else
+        params.tf = tf;
+    }
 
     //How long does the integration take? Get current time
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    steps = trajectory_gen.run(x0, x_vec, times);
+
+
+    steps = trajectory_gen.run(x0, x_vec, times, params);
 
 
     
