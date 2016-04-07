@@ -5,17 +5,9 @@
 
 typedef std::vector< double > state_type;
 
-
-#define X_IND 0
-#define Y_IND 1
-#define THETA_IND 2
-#define V_IND 3
-#define W_IND 4
-#define LAMBDA_IND 5
-#define XD_IND 6
-#define YD_IND 7
-
 class near_identity {
+
+
 
     double c_p_;
     double c_d_;
@@ -23,50 +15,24 @@ class near_identity {
     double epsilon_;
 
 public:
+
+    enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
+    
     near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
 
     void operator() ( const state_type &state , state_type &state_dot, const double /* t*/  )
     {
         //load state variables
-        double x = state[X_IND];
-        double y = state[Y_IND];
-        double theta = state[THETA_IND];
-        double v = state[V_IND];
-        double w = state[W_IND];
-        double lambda = state[LAMBDA_IND];
-
-/*
-std::cout << "cur state:[" << 
-    state[0] << ", " << 
-    state[1] << ", " << 
-    state[2] << ", " <<
-    state[3] << ", " <<
-    state[4] << ", " <<
-    state[5] << ", " <<
-    state[6] << ", " <<
-    state[7] << "]" << std::endl;
-    
-    std::cout << "state_dot:[" << 
-    state_dot[0] << ", " << 
-    state_dot[1] << ", " << 
-    state_dot[2] << ", " <<
-    state_dot[3] << ", " <<
-    state_dot[4] << ", " <<
-    state_dot[5] << ", " <<
-    state_dot[6] << ", " <<
-    state_dot[7] << "]" << std::endl;
-
-*/
-
-        /*Compute desired characteristics of path for this time
-        x_d = f_t(t);
-        x_d_dot = f_dot_t(t);
-        */
-
-        double x_d = state[XD_IND];
-        double y_d = state[YD_IND];
-        double x_d_dot = state_dot[XD_IND];
-        double y_d_dot = state_dot[YD_IND];
+        double x = state[near_identity::X_IND];
+        double y = state[near_identity::Y_IND];
+        double theta = state[near_identity::THETA_IND];
+        double v = state[near_identity::V_IND];
+        double w = state[near_identity::W_IND];
+        double lambda = state[near_identity::LAMBDA_IND];
+        double x_d = state[near_identity::XD_IND];
+        double y_d = state[near_identity::YD_IND];
+        double x_d_dot = state_dot[near_identity::XD_IND];
+        double y_d_dot = state_dot[near_identity::YD_IND];
 
         Eigen::Vector2d xy;
         xy << x,
@@ -141,12 +107,12 @@ std::cout << "cur state:[" <<
         double w_dot = tau(1);
         double theta_dot = w;
 
-        state_dot[X_IND] = x_dot;
-        state_dot[Y_IND] = y_dot;
-        state_dot[THETA_IND] = theta_dot;
-        state_dot[V_IND] = v_dot;
-        state_dot[W_IND] = w_dot;
-        state_dot[LAMBDA_IND] = lambda_dot;
+        state_dot[near_identity::X_IND] = x_dot;
+        state_dot[near_identity::Y_IND] = y_dot;
+        state_dot[near_identity::THETA_IND] = theta_dot;
+        state_dot[near_identity::V_IND] = v_dot;
+        state_dot[near_identity::W_IND] = w_dot;
+        state_dot[near_identity::LAMBDA_IND] = lambda_dot;
         //std::vector<double> state_dot = {x_dot, y_dot, theta_dot, v_dot, w_dot, lambda_dot};
 
     }
