@@ -74,13 +74,13 @@ public:
  
  
  
-class TrajectoryTester 
+class TrajectoryGeneratorBridgeTester 
 {
 public:
-  TrajectoryTester(ros::NodeHandle& nh, std::string& name) : nh_(nh), name_(name){
+  TrajectoryGeneratorBridgeTester(ros::NodeHandle& nh, std::string& name) : nh_(nh), name_(name){
       traj_gen_bridge = *(new TrajectoryGeneratorBridge);
   };
-  ~TrajectoryTester(){};
+  ~TrajectoryGeneratorBridgeTester(){};
 
   bool init()
   {
@@ -107,7 +107,7 @@ private:
 
 
 
-trajectory_generator::trajectory_points TrajectoryTester::generate_trajectory()
+trajectory_generator::trajectory_points TrajectoryGeneratorBridgeTester::generate_trajectory()
 {
     std::string r_key, fw_vel_key;
     double fw_vel = .05;
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "test_ros_interface");
     ros::NodeHandle nh;
     std::string name = ros::this_node::getName();
-    kobuki::TrajectoryTester tester(nh,name);
+    kobuki::TrajectoryGeneratorBridgeTester tester(nh,name);
     
 
 
