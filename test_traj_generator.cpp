@@ -64,7 +64,7 @@ int main(int  argc  , char**  argv  )
     
     size_t steps;
 
-    traj_params params = trajectory_gen.getDefaultParams();
+    traj_params* params = trajectory_gen.getDefaultParams();
     if(argc==2)
     {
 
@@ -73,7 +73,7 @@ int main(int  argc  , char**  argv  )
       if (!(ss >> tf))
           cerr << "Invalid number " << argv[1] << '\n';
       else
-        params.tf = tf;
+        params->tf = tf;
     }
 
     //How long does the integration take? Get current time
