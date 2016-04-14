@@ -54,9 +54,6 @@ int main(int  argc  , char**  argv  )
     
     traj_func* trajpntr = &traj;
     
-    trajectory_gen.setFunc(trajpntr);
-    
-    
     
     //[ Observer samples
     vector<state_type> x_vec;
@@ -64,7 +61,7 @@ int main(int  argc  , char**  argv  )
     
     size_t steps;
 
-    traj_params* params = trajectory_gen.getDefaultParams();
+    traj_params params = trajectory_gen.getDefaultParams();
     if(argc==2)
     {
 
@@ -73,7 +70,7 @@ int main(int  argc  , char**  argv  )
       if (!(ss >> tf))
           cerr << "Invalid number " << argv[1] << '\n';
       else
-        params->tf = tf;
+        params.tf = tf;
     }
 
     //How long does the integration take? Get current time
@@ -81,7 +78,7 @@ int main(int  argc  , char**  argv  )
 
 
 
-    steps = trajectory_gen.run(x0, x_vec, times, params);
+    steps = trajectory_gen.run(trajpntr, x0, x_vec, times, params);
 
 
     
