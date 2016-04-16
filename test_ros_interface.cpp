@@ -78,7 +78,6 @@ class TrajectoryGeneratorBridgeTester
 {
 public:
   TrajectoryGeneratorBridgeTester(ros::NodeHandle& nh, std::string& name) : nh_(nh), name_(name){
-      traj_gen_bridge = *(new TrajectoryGeneratorBridge);
   };
   ~TrajectoryGeneratorBridgeTester(){};
 
