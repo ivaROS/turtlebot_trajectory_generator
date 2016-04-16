@@ -124,14 +124,10 @@ trajectory_generator::trajectory_points TrajectoryGeneratorBridgeTester::generat
         ros::param::get(fw_vel_key, fw_vel); 
     }
     
-    circle_traj_func trajf(fw_vel,r);
-    
-    //traj_func* trajpntr = &trajf;
-    
-    ni_trajectory* traj = new ni_trajectory();
+    ni_trajectory_ptr traj = std::make_shared<ni_trajectory>();
     traj->header.frame_id = "base_link";
     traj->header.stamp = ros::Time::now();
-    traj->trajpntr =  &trajf;
+    traj->trajpntr =  std::make_shared<circle_traj_func>(fw_vel,r);;
     traj->x0_ = traj_gen_bridge.initState();
       
     traj_gen_bridge.generate_trajectory(traj);

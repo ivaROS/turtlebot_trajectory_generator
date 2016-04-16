@@ -51,9 +51,7 @@ int main(int  argc  , char**  argv  )
     
     traj_generator trajectory_gen;
     sample_traj_func traj(0.15,.1);
-    
-    traj_func* trajpntr = &traj;
-    
+        
     
     //[ Observer samples
     vector<state_type> x_vec;
@@ -78,7 +76,7 @@ int main(int  argc  , char**  argv  )
 
 
 
-    steps = trajectory_gen.run(trajpntr, x0, x_vec, times, params);
+    steps = trajectory_gen.run(traj, x0, x_vec, times, params);
 
 
     
