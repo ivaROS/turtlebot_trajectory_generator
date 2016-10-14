@@ -34,6 +34,49 @@ public:
         double x_d_dot = state_dot[near_identity::XD_IND];
         double y_d_dot = state_dot[near_identity::YD_IND];
 
+        Eigen::Matrix2d R;
+        R << cos(theta), -sin(theta), 
+             sin(theta), cos(theta);
+             
+        double lambda_dot = -c_lambda_*(lambda - epsilon_);
+        
+        //Now find tau
+        Eigen::Vector2d tau = getTau(x,y,theta,v,w,lambda,x_d,y_d,x_d_dot,y_d_dot,R,lambda_dot);
+
+        //Now find derivatives of state variables
+        //x_dot = (R*e1)*v1;
+        double x_dot = R(0,0)*v;
+        double y_dot = R(1,0)*v;
+        double v_dot = tau(0);
+        double w_dot = tau(1);
+        double theta_dot = w;
+
+        state_dot[near_identity::X_IND] = x_dot;
+        state_dot[near_identity::Y_IND] = y_dot;
+        state_dot[near_identity::THETA_IND] = theta_dot;
+        state_dot[near_identity::V_IND] = v_dot;
+        state_dot[near_identity::W_IND] = w_dot;
+        state_dot[near_identity::LAMBDA_IND] = lambda_dot;
+        //std::vector<double> state_dot = {x_dot, y_dot, theta_dot, v_dot, w_dot, lambda_dot};
+
+    }
+    
+    inline
+    Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot )
+    {
+    
+        Eigen::Matrix2d R;
+        R << cos(theta), -sin(theta), 
+             sin(theta), cos(theta);
+             
+        double lambda_dot = -c_lambda_*(lambda - epsilon_);
+        return getTau(x,y,theta,v,w,lambda,x_d,y_d,x_d_dot,y_d_dot,R,lambda_dot);
+    }
+    
+    
+    inline
+    Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot, const Eigen::Matrix2d R, double lambda_dot )
+    {
         Eigen::Vector2d xy;
         xy << x,
               y;
@@ -50,11 +93,6 @@ public:
         xy_d_dot << x_d_dot,
                     y_d_dot;
 
-        //Compute rotation matrices R, R_lambda, R_lambda_inv
-        Eigen::Matrix2d R;
-        R << cos(theta), -sin(theta), 
-             sin(theta), cos(theta);
-
         //R_lambda = [R*e1 lambda*R*e2];
         Eigen::Matrix2d R_lambda;
         R_lambda << R(0,0), lambda*R(0,1), 
@@ -64,9 +102,6 @@ public:
         Eigen::Matrix2d R_lambda_inv;
         R_lambda_inv << R(0,0),        R(1,0), 
                         R(0,1)/lambda, R(1,1)/lambda;
-
-
-        double lambda_dot = -c_lambda_*(lambda - epsilon_);
 
         Eigen::Matrix2d w_hat;
         w_hat << 0,             -lambda*w, 
@@ -96,25 +131,9 @@ public:
 
         //Now find tau
         Eigen::Vector2d tau = R_lambda_inv*u - w_hat*vw - lambda_dot*(w_hat - c_lambda_*Eigen::Matrix2d::Identity())*Eigen::Matrix<double, 2, 1>::Identity();
-
-    //    std::cout << "tau: " << tau(0) << ", " << tau(1) << std::endl;
-
-        //Now find derivatives of state variables
-        //x_dot = (R*e1)*v1;
-        double x_dot = R(0,0)*v;
-        double y_dot = R(1,0)*v;
-        double v_dot = tau(0);
-        double w_dot = tau(1);
-        double theta_dot = w;
-
-        state_dot[near_identity::X_IND] = x_dot;
-        state_dot[near_identity::Y_IND] = y_dot;
-        state_dot[near_identity::THETA_IND] = theta_dot;
-        state_dot[near_identity::V_IND] = v_dot;
-        state_dot[near_identity::W_IND] = w_dot;
-        state_dot[near_identity::LAMBDA_IND] = lambda_dot;
-        //std::vector<double> state_dot = {x_dot, y_dot, theta_dot, v_dot, w_dot, lambda_dot};
-
+        
+        return tau;
+   
     }
 };
 
