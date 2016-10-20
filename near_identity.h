@@ -13,12 +13,19 @@ class near_identity {
     double c_d_;
     double c_lambda_;
     double epsilon_;
+    
+    double v_max_ = std::numeric_limits<double>::infinity();
+    double w_max_ = std::numeric_limits<double>::infinity();
+    double a_max_ = std::numeric_limits<double>::infinity();
+    double w_dot_max_ = std::numeric_limits<double>::infinity();
 
 public:
 
     enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
     
     near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
+
+    near_identity( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon), v_max_(v_max), w_max_(w_max), a_max_(a_max), w_dot_max_(w_dot_max) { }
 
     void operator() ( const state_type &state , state_type &state_dot, const double /* t*/  )
     {
@@ -40,16 +47,19 @@ public:
              
         double lambda_dot = -c_lambda_*(lambda - epsilon_);
         
-        //Now find tau
-        Eigen::Vector2d tau = getTau(x,y,theta,v,w,lambda,x_d,y_d,x_d_dot,y_d_dot,R,lambda_dot);
 
         //Now find derivatives of state variables
         //x_dot = (R*e1)*v1;
         double x_dot = R(0,0)*v;
         double y_dot = R(1,0)*v;
-        double v_dot = tau(0);
-        double w_dot = tau(1);
         double theta_dot = w;
+        
+        //Now find tau
+        Eigen::Vector2d tau = getTau(x,y,theta,v,w,lambda,x_d,y_d,x_d_dot,y_d_dot,R,lambda_dot);
+
+        double v_dot = limitV(tau, v);
+        double w_dot = limitW(tau, w);
+
 
         state_dot[near_identity::X_IND] = x_dot;
         state_dot[near_identity::Y_IND] = y_dot;
@@ -134,6 +144,55 @@ public:
         
         return tau;
    
+    }
+    
+
+    /* Generic saturation function for variable X. */
+    inline
+    double saturate(double X, double minX, double maxX)
+    {
+        if(X >= maxX)
+        {
+            return maxX;
+        }
+        else if(X <= minX)
+        {
+            return minX;
+        }
+        else
+        {
+            return X;
+        }
+    }
+    
+    /* Generic saturation function for variable X_dot given limits on X_dot and X. */
+    inline
+    double applyLimits(double X_dot, double X, double minX, double maxX, double minX_dot, double maxX_dot)
+    {
+        if(X >= maxX)
+        {
+            return saturate(X_dot, minX_dot, 0);
+        }
+        else if(X <= minX)
+        {
+            return saturate(X_dot, 0, maxX_dot);
+        }
+        else
+        {
+            return saturate(X_dot, minX_dot, maxX_dot);
+        }   
+    }
+    
+    inline
+    double limitV(Eigen::Vector2d tau, double v)
+    {
+        return applyLimits(tau[0], v, -v_max_, v_max_, -a_max_, a_max_);
+    }
+    
+    inline
+    double limitW(Eigen::Vector2d tau, double w)
+    {
+        return applyLimits(tau[1], w, -w_max_, w_max_, -w_dot_max_, w_dot_max_);
     }
 };
 
