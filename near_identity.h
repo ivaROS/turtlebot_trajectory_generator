@@ -149,7 +149,7 @@ public:
 
     /* Generic saturation function for variable X. */
     inline
-    double saturate(double X, double minX, double maxX)
+    static double saturate(double X, double minX, double maxX)
     {
         if(X >= maxX)
         {
@@ -167,7 +167,7 @@ public:
     
     /* Generic saturation function for variable X_dot given limits on X_dot and X. */
     inline
-    double applyLimits(double X_dot, double X, double minX, double maxX, double minX_dot, double maxX_dot)
+    static double applyLimits(double X_dot, double X, double minX, double maxX, double minX_dot, double maxX_dot)
     {
         if(X >= maxX)
         {
