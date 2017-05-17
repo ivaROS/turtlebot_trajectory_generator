@@ -84,7 +84,7 @@ public:
   bool init()
   {
 
-    trajectory_publisher_ = nh_.advertise< trajectory_generator::trajectory_points >("/desired_trajectory", 10);
+    trajectory_publisher_ = nh_.advertise< pips_trajectory_msgs::trajectory_points >("/desired_trajectory", 10);
 
     return true;
   };
@@ -93,7 +93,7 @@ public:
    * @return true, if successful
    */
  
-    trajectory_generator::trajectory_points generate_trajectory();
+    pips_trajectory_msgs::trajectory_points generate_trajectory();
 
 private:
   ros::NodeHandle nh_;
@@ -106,7 +106,7 @@ private:
 
 
 
-trajectory_generator::trajectory_points TrajectoryGeneratorBridgeTester::generate_trajectory()
+pips_trajectory_msgs::trajectory_points TrajectoryGeneratorBridgeTester::generate_trajectory()
 {
     std::string r_key, fw_vel_key;
     double fw_vel = .05;
@@ -133,7 +133,7 @@ trajectory_generator::trajectory_points TrajectoryGeneratorBridgeTester::generat
     
     traj->print();
 
-    trajectory_generator::trajectory_points trajectory_msg = traj->toTrajectoryMsg ();
+    pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toTrajectoryMsg ();
     trajectory_publisher_.publish(trajectory_msg);
     
     return trajectory_msg;
