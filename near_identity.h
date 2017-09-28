@@ -85,7 +85,7 @@ public:
     
     
     inline
-    Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot, const Eigen::Matrix2d R, double lambda_dot )
+    Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot, const Eigen::Matrix2d& R, double lambda_dot )
     {
         Eigen::Vector2d xy;
         xy << x,
@@ -184,13 +184,13 @@ public:
     }
     
     inline
-    double limitV(Eigen::Vector2d tau, double v)
+    double limitV(const Eigen::Vector2d& tau, double v)
     {
         return applyLimits(tau[0], v, -v_max_, v_max_, -a_max_, a_max_);
     }
     
     inline
-    double limitW(Eigen::Vector2d tau, double w)
+    double limitW(const Eigen::Vector2d& tau, double w)
     {
         return applyLimits(tau[1], w, -w_max_, w_max_, -w_dot_max_, w_dot_max_);
     }
