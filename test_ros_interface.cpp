@@ -123,7 +123,7 @@ pips_trajectory_msgs::trajectory_points TrajectoryGeneratorBridgeTester::generat
         ros::param::get(fw_vel_key, fw_vel); 
     }
     
-    ni_trajectory_ptr traj = std::make_shared<ni_trajectory>();
+    trajectory_ptr traj = std::make_shared<ni_trajectory>();
     traj->header.frame_id = "base_link";
     traj->header.stamp = ros::Time::now();
     traj->trajpntr =  std::make_shared<circle_traj_func>(fw_vel,r);;

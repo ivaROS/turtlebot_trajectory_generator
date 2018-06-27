@@ -3,7 +3,6 @@
 #ifndef NEAR_IDENTITY_H
 #define NEAR_IDENTITY_H
 
-typedef std::vector< double > state_type;
 
 class near_identity {
 
@@ -21,25 +20,24 @@ class near_identity {
 
 public:
 
-    enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
     
     near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
 
     near_identity( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon), v_max_(v_max), w_max_(w_max), a_max_(a_max), w_dot_max_(w_dot_max) { }
 
-    void operator() ( const state_type &state , state_type &state_dot, const double /* t*/  )
+    void operator() ( const ni_state &state , ni_state &state_dot, const double /* t*/  )
     {
         //load state variables
-        double x = state[near_identity::X_IND];
-        double y = state[near_identity::Y_IND];
-        double theta = state[near_identity::THETA_IND];
-        double v = state[near_identity::V_IND];
-        double w = state[near_identity::W_IND];
-        double lambda = state[near_identity::LAMBDA_IND];
-        double x_d = state[near_identity::XD_IND];
-        double y_d = state[near_identity::YD_IND];
-        double x_d_dot = state_dot[near_identity::XD_IND];
-        double y_d_dot = state_dot[near_identity::YD_IND];
+        double x = state[ni_state::X_IND];
+        double y = state[ni_state::Y_IND];
+        double theta = state[ni_state::THETA_IND];
+        double v = state[ni_state::V_IND];
+        double w = state[ni_state::W_IND];
+        double lambda = state[ni_state::LAMBDA_IND];
+        double x_d = state[ni_state::XD_IND];
+        double y_d = state[ni_state::YD_IND];
+        double x_d_dot = state_dot[ni_state::XD_IND];
+        double y_d_dot = state_dot[ni_state::YD_IND];
 
         Eigen::Matrix2d R;
         R << cos(theta), -sin(theta), 
@@ -61,12 +59,12 @@ public:
         double w_dot = limitW(tau, w);
 
 
-        state_dot[near_identity::X_IND] = x_dot;
-        state_dot[near_identity::Y_IND] = y_dot;
-        state_dot[near_identity::THETA_IND] = theta_dot;
-        state_dot[near_identity::V_IND] = v_dot;
-        state_dot[near_identity::W_IND] = w_dot;
-        state_dot[near_identity::LAMBDA_IND] = lambda_dot;
+        state_dot[ni_state::X_IND] = x_dot;
+        state_dot[ni_state::Y_IND] = y_dot;
+        state_dot[ni_state::THETA_IND] = theta_dot;
+        state_dot[ni_state::V_IND] = v_dot;
+        state_dot[ni_state::W_IND] = w_dot;
+        state_dot[ni_state::LAMBDA_IND] = lambda_dot;
         //std::vector<double> state_dot = {x_dot, y_dot, theta_dot, v_dot, w_dot, lambda_dot};
 
     }
