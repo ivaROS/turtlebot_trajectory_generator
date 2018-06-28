@@ -1,7 +1,57 @@
-#include <Eigen/Eigen>
 
 #ifndef NEAR_IDENTITY_H
 #define NEAR_IDENTITY_H
+
+
+#include <Eigen/Eigen>
+
+//Since 'near identity' is no longer at the bottom but rather added from the top, it's probably ok for these dependencies to be included.
+//It may be cleaner to do the conversion elsewhere, but this should be more straightforward
+#include <geometry_msgs/Pose.h>
+#include <pips_trajectory_msgs/trajectory_point.h>
+#include <pips_trajectory_msgs/trajectory_points.h>
+
+class ni_state : public TrajectoryState<ni_state,8>
+{
+public:
+  enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
+  
+  
+  
+  bool checkState()
+  {
+    return !(data[ni_state::LAMBDA_IND] ==0);
+  }
+  
+  //Implement any and all conversion methods
+  void to(geometry_msgs::Pose& pose)
+  {
+    pose.position.x = data[ni_state::X_IND];
+  }
+  
+  pips_trajectory_msgs::trajectory_points trajectoryMsg()
+  {
+    pips_trajectory_msgs::trajectory_points msg;
+    return msg;
+    //todo:
+  }
+  
+  pips_trajectory_msgs::trajectory_point trajectoryStateMsg()
+  {
+    pips_trajectory_msgs::trajectory_point point;
+    //point.time = ros::Duration(times[i]);
+    point.x = data[ni_state::X_IND];
+    point.y = data[ni_state::Y_IND];
+    point.theta = data[ni_state::THETA_IND];
+    point.v = data[ni_state::V_IND];
+    point.w = data[ni_state::W_IND];
+    return point;
+  }
+  
+};
+
+
+
 
 
 class near_identity {
@@ -192,6 +242,54 @@ public:
     {
         return applyLimits(tau[1], w, -w_max_, w_max_, -w_dot_max_, w_dot_max_);
     }
+};
+
+
+
+
+//[ rhs_class
+/* The rhs of x' = f(x) defined as a class */
+class desired_traj_func {
+  
+public:
+  //TODO: was there ever a reason to have this?
+  virtual void init ( const ni_state &x0 )
+  {
+    //std::cout << "This should only print if an init function is not defined" << std::endl;
+  }
+  
+  virtual void dState ( const ni_state &x , ni_state &dxdt , const double  t  )=0;
+  
+  
+};
+//]
+
+
+
+//[ rhs_class
+/* The rhs of x' = f(x) defined as a class */
+class ni_controller : public traj_func<ni_controller, ni_state>
+{
+  
+  near_identity ni_;
+  desired_traj_func* traj_;   //Will look into using reference to function 
+  
+  
+public:
+  ni_controller( near_identity ni) :  ni_(ni) { }
+  
+  void setTrajFunc(desired_traj_func* traj)
+  {
+    traj_ = traj;
+  }
+  
+  
+  
+  void operator_impl ( const ni_state &x , ni_state &dxdt , const double  t  )
+  {
+    traj_->dState(x,dxdt,t);
+    ni_(x,dxdt,t);
+  }
 };
 
 

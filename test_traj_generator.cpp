@@ -1,4 +1,5 @@
-#include "traj_generator.h"
+#include <traj_generator.h>
+#include <near_identity.h>
 
 #include <iostream>
 #include <sstream>
@@ -7,9 +8,16 @@
 #include <math.h>
 
 
+
+
+
+
+
+
+
 //[ rhs_class
 /* The rhs of x' = f(x) defined as a class */
-class sample_traj_func : public virtual traj_func{
+class sample_traj_func : public virtual desired_traj_func{
 
     double m_amp;
     double m_f;
@@ -17,7 +25,7 @@ class sample_traj_func : public virtual traj_func{
 public:
     sample_traj_func( double amp, double f ) : m_amp(amp), m_f(f) { }
 
-    void dState ( const state_type &x , state_type &dxdt , const double  t  )
+    void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
     {
         dxdt[6] = 1;
         dxdt[7] = sin(t*2.0*3.14*m_f) * m_amp;
@@ -33,7 +41,7 @@ int main(int  argc  , char**  argv  )
 
 
     //[ initial state
-    state_type x0(8); 
+    ni_state x0; 
     x0[0] = 1.0; //x
     x0[1] =-2.0; //y
     x0[2] = 0.0; //theta
@@ -49,12 +57,16 @@ int main(int  argc  , char**  argv  )
 
     //double abs_err_ = 1.0e-10 , rel_err_ = 1.0e-6 , a_x_ = 1.0 , a_dxdt_ = 1.0;
     
-    traj_generator trajectory_gen;
+    traj_generator<ni_state> trajectory_gen;
     sample_traj_func traj(0.15,.1);
+    
+    near_identity ni(100,100,100,.01);    
+    ni_controller nc(ni);
+    nc.setTrajFunc(&traj);
         
     
     //[ Observer samples
-    vector<state_type> x_vec;
+    vector<ni_state> x_vec;
     vector<double> times;
     
     size_t steps;
@@ -76,7 +88,7 @@ int main(int  argc  , char**  argv  )
 
 
 
-    steps = trajectory_gen.run(traj, x0, x_vec, times, params);
+    steps = trajectory_gen.run(nc, x0, x_vec, times, params);
 
 
     
