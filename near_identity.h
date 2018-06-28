@@ -8,15 +8,20 @@
 //Since 'near identity' is no longer at the bottom but rather added from the top, it's probably ok for these dependencies to be included.
 //It may be cleaner to do the conversion elsewhere, but this should be more straightforward
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Twist.h>
 #include <pips_trajectory_msgs/trajectory_point.h>
 #include <pips_trajectory_msgs/trajectory_points.h>
+#include <tf/transform_datatypes.h>
+
 
 class ni_state : public TrajectoryState<ni_state,8>
 {
 public:
   enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
   
-  typedef pips_trajectory_msgs::trajectory_points msg_state_type;
+  typedef pips_trajectory_msgs::trajectory_points trajectory_msg_t;
   
   bool checkState()
   {
@@ -24,19 +29,22 @@ public:
   }
   
   //Implement any and all conversion methods
-  void to(geometry_msgs::Pose& pose)
+  void to(geometry_msgs::Point& point)
   {
-    pose.position.x = data[ni_state::X_IND];
+    point.x = data[ni_state::X_IND];
+    point.y = data[ni_state::Y_IND];
+    point.z = 0;
   }
   
-  pips_trajectory_msgs::trajectory_points trajectoryMsg()
+  void to(geometry_msgs::Quaternion& quat)
   {
-    pips_trajectory_msgs::trajectory_points msg;
-    return msg;
-    //todo:
+    double yaw = data[ni_state::THETA_IND];
+    double roll = 0;
+    double pitch = 0;
+    quat = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
   }
   
-  pips_trajectory_msgs::trajectory_point trajectoryStateMsg()
+  pips_trajectory_msgs::trajectory_point toMsg()
   {
     pips_trajectory_msgs::trajectory_point point;
     //point.time = ros::Duration(times[i]);

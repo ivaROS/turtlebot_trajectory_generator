@@ -135,7 +135,7 @@ public:
     
     
     traj_type_ptr traj = std::make_shared<traj_type>();
-    traj->header.frame_id = "base_link";
+    traj->header.frame_id = "base_footprint";
     traj->header.stamp = ros::Time::now();
     traj->trajpntr = nc ;
     traj->x0_;
@@ -146,11 +146,9 @@ public:
     
     //traj->print();
     
-    //pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toTrajectoryMsg ();
-    //trajectory_publisher_.publish(trajectory_msg);
-    
-    pips_trajectory_msgs::trajectory_points trajectory_msg;
-    
+    pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toMsg ();
+    trajectory_publisher_.publish(trajectory_msg);
+        
     return trajectory_msg;
   }
   
