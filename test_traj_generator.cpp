@@ -102,16 +102,19 @@ int main(int  argc  , char**  argv  )
 
     std::cout<< "const observer: "  << steps << " steps. final: " << '\t' << x0[0] << '\t' << x0[1]<< std::endl;
     /* output */
-    std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << 'x' << '\t' << 'y' << std::endl;
+    std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
     
-    for( size_t i=0; i<=steps; i++ )
+    int i = 0;
+    for(ni_state state : x_vec)
     {
-        double error_x = x_vec[i][0] - x_vec[i][6];
-        double error_y = x_vec[i][1] - x_vec[i][7];
+      double error_x = state[0] - state[6];
+      double error_y = state[1] - state[7];
+      
         
-        double error = sqrt(error_x*error_x + error_y*error_y);
-        printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", times[i], error, x_vec[i][0], x_vec[i][1], x_vec[i][2], x_vec[i][3], x_vec[i][4], x_vec[i][5], x_vec[i][6], x_vec[i][7]);
-        
+      double error = sqrt(error_x*error_x + error_y*error_y);
+      printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", times[i], error, state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7]);
+      
+      i++;
         //cout << times[i] << '\t' << x_vec[i][0] << '\t' << x_vec[i][1] << "\t\t" << x_vec[i][2]<< "\t\t" << x_vec[i][3]<< "\t\t" << x_vec[i][4]<< '\t' << x_vec[i][5]<< '\t' << x_vec[i][6]<< '\t' << x_vec[i][7] << '\n';
     }
     //]
