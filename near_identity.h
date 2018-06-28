@@ -56,6 +56,25 @@ public:
     return point;
   }
   
+  
+//   std::String getFieldNames()
+//   
+//   //TODO: change this to a toString() method for more flexibility
+//   void toString()
+//   {
+//     std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
+//     
+//     for( size_t i=0; i < this->num_states(); i++ )
+//     {
+//       double error_x = x_vec[i][near_identity::X_IND] - x_vec[i][near_identity::XD_IND];
+//       double error_y = x_vec[i][near_identity::Y_IND] - x_vec[i][near_identity::YD_IND];
+//       
+//       double error = sqrt(error_x*error_x + error_y*error_y);
+//       printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", times[i], error, x_vec[i][0], x_vec[i][1], x_vec[i][2], x_vec[i][3], x_vec[i][4], x_vec[i][5], x_vec[i][6], x_vec[i][7]);
+//     }
+//   }
+//     
+  
 };
 
 

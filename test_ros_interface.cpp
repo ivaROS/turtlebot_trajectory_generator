@@ -138,13 +138,28 @@ public:
     traj->header.frame_id = "base_footprint";
     traj->header.stamp = ros::Time::now();
     traj->trajpntr = nc ;
-    traj->x0_;
+    traj->x0_[ni_state::LAMBDA_IND]=.3;
     
     traj_gen_bridge.generate_trajectory(traj);
     
     ROS_INFO_STREAM("Size: " << traj->x_vec.size());
     
     //traj->print();
+    
+    
+    std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
+    
+    for( size_t i=0; i < traj->num_states(); i++ )
+    {
+      double error_x = traj->x_vec[i][ni_state::X_IND] - traj->x_vec[i][ni_state::XD_IND];
+      double error_y = traj->x_vec[i][ni_state::Y_IND] - traj->x_vec[i][ni_state::YD_IND];
+      
+      double error = sqrt(error_x*error_x + error_y*error_y);
+      printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
+    }
+  
+    
+    
     
     pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toMsg ();
     trajectory_publisher_.publish(trajectory_msg);
