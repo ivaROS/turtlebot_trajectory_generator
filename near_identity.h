@@ -2,7 +2,7 @@
 #ifndef NEAR_IDENTITY_H
 #define NEAR_IDENTITY_H
 
-
+#include <traj_generator.h>
 #include <Eigen/Eigen>
 
 //Since 'near identity' is no longer at the bottom but rather added from the top, it's probably ok for these dependencies to be included.
@@ -16,7 +16,7 @@ class ni_state : public TrajectoryState<ni_state,8>
 public:
   enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
   
-  
+  typedef pips_trajectory_msgs::trajectory_points msg_state_type;
   
   bool checkState()
   {
@@ -50,6 +50,114 @@ public:
   
 };
 
+
+/*
+ 
+ //TODO: Remember to init lambda to robot radius, or something comparable
+
+inline
+state_type initState()
+{
+  state_type x0(8);
+  TrajectoryGeneratorBridge::initState(x0);
+  return x0;
+}
+
+inline
+void initState(state_type& x0, double v0)
+{
+  x0[near_identity::V_IND] = v0;
+}
+
+inline
+void initState(state_type& x0)
+{
+  x0[near_identity::X_IND] = 0;      //x
+  x0[near_identity::Y_IND] = 0;      //y
+  x0[near_identity::THETA_IND] = 0;  //theta
+  x0[near_identity::V_IND] = 0;      //v
+  x0[near_identity::W_IND] = 0;      //w
+  x0[near_identity::LAMBDA_IND] = robot_radius_;    //lambda: must be > 0!
+  x0[near_identity::XD_IND] = 0;    //x_d
+  x0[near_identity::YD_IND] = 0;    //y_d
+}
+
+inline
+void initState(state_type& x0, const nav_msgs::Odometry::ConstPtr& curr_odom)
+{
+  double vx = curr_odom->twist.twist.linear.x;
+  double vy = curr_odom->twist.twist.linear.y;
+  double v = std::sqrt((vx*vx) + (vy*vy)); 
+  double w = curr_odom->twist.twist.angular.z;
+  
+  x0[near_identity::V_IND] = v;      //v
+  x0[near_identity::W_IND] = w;      //w
+}
+
+inline
+void initState(trajectory_ptr& traj, const nav_msgs::Odometry::ConstPtr& curr_odom)
+{
+  initState(traj->x0_, curr_odom);
+  
+}
+
+static const nav_msgs::OdometryPtr OdomFromState(const state_type& state, double t, const std_msgs::Header& header);
+
+
+
+const nav_msgs::OdometryPtr TrajectoryGeneratorBridge::OdomFromState(const state_type& state, double t, const std_msgs::Header& header)
+{
+nav_msgs::OdometryPtr odom;
+
+double x = state[near_identity::X_IND];      //x
+double y = state[near_identity::Y_IND];      //y
+double theta = state[near_identity::THETA_IND];  //theta
+double v = state[near_identity::V_IND];      //v
+double w = state[near_identity::W_IND];      //w
+
+double vx = v*std::cos(theta);
+double vy = v*std::sin(theta);
+
+odom->header.stamp = ros::Time(t);
+odom->header.frame_id = header.frame_id;
+
+odom->pose.pose.position.x = x;
+odom->pose.pose.position.y = y;
+odom->pose.pose.orientation = TrajectoryGeneratorBridge::yawToQuaternion(theta);
+odom->twist.twist.linear.x = vx;
+odom->twist.twist.linear.y = vy; 
+odom->twist.twist.angular.z = w;
+
+return odom;
+}
+
+
+//     //TODO: change this to a toString() method for more flexibility
+//     void trajectory_states::print()
+//     {
+//       std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
+//       
+//       for( size_t i=0; i < this->num_states(); i++ )
+//       {
+//         double error_x = x_vec[i][near_identity::X_IND] - x_vec[i][near_identity::XD_IND];
+//         double error_y = x_vec[i][near_identity::Y_IND] - x_vec[i][near_identity::YD_IND];
+//         
+//         double error = sqrt(error_x*error_x + error_y*error_y);
+//         printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", times[i], error, x_vec[i][0], x_vec[i][1], x_vec[i][2], x_vec[i][3], x_vec[i][4], x_vec[i][5], x_vec[i][6], x_vec[i][7]);
+//       }
+//     }
+
+
+template<typename T>
+state_type initState(T& source)
+{
+  state_type x0 = TrajectoryGeneratorBridge::initState();
+  initState(x0, source);
+  return x0;
+}
+
+template<const nav_msgs::Odometry::ConstPtr&> state_type initState(const nav_msgs::Odometry::ConstPtr& curr_odom);
+*/
 
 
 
@@ -261,6 +369,8 @@ public:
   virtual void dState ( const ni_state &x , ni_state &dxdt , const double  t  )=0;
   
   
+  typedef std::shared_ptr< ::desired_traj_func> Ptr;
+  
 };
 //]
 
@@ -272,13 +382,13 @@ class ni_controller : public traj_func<ni_controller, ni_state>
 {
   
   near_identity ni_;
-  desired_traj_func* traj_;   //Will look into using reference to function 
+  desired_traj_func::Ptr traj_;   //Will look into using reference to function 
   
   
 public:
   ni_controller( near_identity ni) :  ni_(ni) { }
   
-  void setTrajFunc(desired_traj_func* traj)
+  void setTrajFunc(desired_traj_func::Ptr& traj)
   {
     traj_ = traj;
   }
@@ -290,6 +400,9 @@ public:
     traj_->dState(x,dxdt,t);
     ni_(x,dxdt,t);
   }
+  
+  typedef std::shared_ptr< ::ni_controller> Ptr;
+  
 };
 
 

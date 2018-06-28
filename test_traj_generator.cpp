@@ -57,12 +57,12 @@ int main(int  argc  , char**  argv  )
 
     //double abs_err_ = 1.0e-10 , rel_err_ = 1.0e-6 , a_x_ = 1.0 , a_dxdt_ = 1.0;
     
-    traj_generator<ni_state> trajectory_gen;
-    sample_traj_func traj(0.15,.1);
+    traj_generator<ni_state, ni_controller> trajectory_gen;
+    desired_traj_func::Ptr traj = std::make_shared<sample_traj_func>(0.15,.1);
     
     near_identity ni(100,100,100,.01);    
     ni_controller nc(ni);
-    nc.setTrajFunc(&traj);
+    nc.setTrajFunc(traj);
         
     
     //[ Observer samples
