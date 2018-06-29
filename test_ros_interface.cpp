@@ -189,8 +189,11 @@ int main(int argc, char **argv)
 
     if (tester.init())
     {
+      while(ros::ok())
+      {
         tester.generate_trajectory();
-        ros::spin();
+        ros::spinOnce();
+      }
     }
     else
     {
