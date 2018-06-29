@@ -37,7 +37,7 @@ public:
     {
     }
   
-  bool checkState()
+  bool isValid()
   {
     return !(lambda ==0);
   }
