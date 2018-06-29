@@ -23,19 +23,34 @@ public:
   
   typedef pips_trajectory_msgs::trajectory_points trajectory_msg_t;
   
-  ElementReference<double> x,y,theta,v,w,lambda,xd,yd;
+  //decltype(data)
+  VectorReference<std::vector<double> > x,y,theta,v,w,lambda,xd,yd;
   
   ni_state() :
-    x(data[ni_state::X_IND]),
-    y(data[ni_state::Y_IND]),
-    theta(data[ni_state::THETA_IND]),
-    v(data[ni_state::V_IND]),
-    w(data[ni_state::W_IND]),
-    lambda(data[ni_state::LAMBDA_IND]),
-    xd(data[ni_state::XD_IND]),
-    yd(data[ni_state::YD_IND])
+    x(data,ni_state::X_IND),
+    y(data,ni_state::Y_IND),
+    theta(data,ni_state::THETA_IND),
+    v(data,ni_state::V_IND),
+    w(data,ni_state::W_IND),
+    lambda(data,ni_state::LAMBDA_IND),
+    xd(data,ni_state::XD_IND),
+    yd(data,ni_state::YD_IND)
     {
     }
+    
+  ni_state(const ni_state& state) : 
+    TrajectoryState(state),
+    x(data,ni_state::X_IND),
+    y(data,ni_state::Y_IND),
+    theta(data,ni_state::THETA_IND),
+    v(data,ni_state::V_IND),
+    w(data,ni_state::W_IND),
+    lambda(data,ni_state::LAMBDA_IND),
+    xd(data,ni_state::XD_IND),
+    yd(data,ni_state::YD_IND)
+  {
+      
+  }
   
   bool isValid()
   {

@@ -134,47 +134,52 @@ public:
     double fw_vel = .05;
     double r = .5;
     
-    std::vector<double> temp(5);
-    for(int i=0; i < temp.size(); ++i)
+    
     {
-      temp[i] = i;
+      state_type state;
+      
+      for(int i=0; i < 8; ++i)
+      {
+        state[i] = i;
+      }
+
+      std::cout << "State Array Access: \n" << state[0] << "\t" << state[1] << "\t" << state[2] << "\t" << state[3] << "\t" << state[4] << "\t" << state[5] << "\t" << state[6] << "\t" << state[7] << std::endl;
+      std::cout << "State Element Access: \n" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
+      
+      //printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
+      
+      
+//       std::cout << "temp" << ":\t" << temp[1]<< "should=1" <<std::endl;
+//     
+//       
+//       ElementReference<double> a(temp[1]);
+//       
+//       double& ad = a;
+//       
+//       double c = a;
+//       
+//       std::cout << "a:\t" << a << "; should=1"<<std::endl;
+//       
+//       std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
+//       
+//       std::cout << "c:\t" << c << "; should=1"<<std::endl;
+//       
+//       
+//       temp[1] = 3;
+//       std::cout << "temp" << ":\t" << temp[1] << "; should=3"<<std::endl;
+//       
+//       std::cout << "a:\t" << a << "; should=3"<<std::endl;
+//       
+//       std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
+//       
+//       ad = 2;
+//       
+//       std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
+//       std::cout << "a:\t" << a << "; should=2"<<std::endl;
+//       
+//       std::cout << "temp" << ":\t" << temp[1] << "; should=2"<<std::endl;
+      
     }
-    
-//     for(int i=0; i < temp.size(); ++i)
-//     {
-//       std::cout << i << ":\t" << temp[i] <<std::endl;
-//     }
-    
-    std::cout << "temp" << ":\t" << temp[1]<< "should=1" <<std::endl;
-  
-    
-    ElementReference<double> a(temp[1]);
-    
-    double& ad = a;
-    
-    double c = a;
-    
-    std::cout << "a:\t" << a << "; should=1"<<std::endl;
-    
-    std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
-    
-    std::cout << "c:\t" << c << "; should=1"<<std::endl;
-    
-    
-    temp[1] = 3;
-    std::cout << "temp" << ":\t" << temp[1] << "; should=3"<<std::endl;
-    
-    std::cout << "a:\t" << a << "; should=3"<<std::endl;
-    
-    std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
-    
-    ad = 2;
-    
-    std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
-    std::cout << "a:\t" << a << "; should=2"<<std::endl;
-    
-    std::cout << "temp" << ":\t" << temp[1] << "; should=2"<<std::endl;
-    
     
     
     
@@ -213,11 +218,15 @@ public:
     
     {
       int i=4;
-    state_type state = traj->x_vec[i];
+      std::cout << "For state " << i << ":" << std::endl;
+      
+    const state_type& state = traj->x_vec[i];
     printf("Raw Array Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
     std::cout << "State Array Access: \n" << state[0] << "\t" << state[1] << "\t" << state[2] << "\t" << state[3] << "\t" << state[4] << "\t" << state[5] << "\t" << state[6] << "\t" << state[7] << std::endl;
+    std::cout << "State Element Access: \n" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
     
-    printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
+    //printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
+    std::cout << std::endl << std::endl;
     
     }
     
@@ -233,7 +242,7 @@ public:
       
       double error = sqrt(error_x*error_x + error_y*error_y);
       //NOTE: This doesn't work, for some reason
-      printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
+      std::cout << traj->times[i] << "\t" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
     }
   
   for( size_t i=0; i < traj->num_states(); i++ )
@@ -277,7 +286,7 @@ int main(int argc, char **argv)
 
     if (tester.init())
     {
-      //while(ros::ok())
+      while(ros::ok())
       {
         tester.generate_trajectory();
         ros::spinOnce();
