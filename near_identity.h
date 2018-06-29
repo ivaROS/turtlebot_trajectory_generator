@@ -23,22 +23,36 @@ public:
   
   typedef pips_trajectory_msgs::trajectory_points trajectory_msg_t;
   
+  ElementReference<double> x,y,theta,v,w,lambda,xd,yd;
+  
+  ni_state() :
+    x(data[ni_state::X_IND]),
+    y(data[ni_state::Y_IND]),
+    theta(data[ni_state::THETA_IND]),
+    v(data[ni_state::V_IND]),
+    w(data[ni_state::W_IND]),
+    lambda(data[ni_state::LAMBDA_IND]),
+    xd(data[ni_state::XD_IND]),
+    yd(data[ni_state::YD_IND])
+    {
+    }
+  
   bool checkState()
   {
-    return !(data[ni_state::LAMBDA_IND] ==0);
+    return !(lambda ==0);
   }
   
   //Implement any and all conversion methods
   void to(geometry_msgs::Point& point)
   {
-    point.x = data[ni_state::X_IND];
-    point.y = data[ni_state::Y_IND];
+    point.x = x;
+    point.y = y;
     point.z = 0;
   }
   
   void to(geometry_msgs::Quaternion& quat)
   {
-    double yaw = data[ni_state::THETA_IND];
+    double yaw = theta;
     double roll = 0;
     double pitch = 0;
     quat = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
@@ -48,11 +62,11 @@ public:
   {
     pips_trajectory_msgs::trajectory_point point;
     //point.time = ros::Duration(times[i]);
-    point.x = data[ni_state::X_IND];
-    point.y = data[ni_state::Y_IND];
-    point.theta = data[ni_state::THETA_IND];
-    point.v = data[ni_state::V_IND];
-    point.w = data[ni_state::W_IND];
+    point.x = x;
+    point.y = y;
+    point.theta = theta;
+    point.v = v;
+    point.w = w;
     return point;
   }
   

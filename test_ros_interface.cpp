@@ -151,11 +151,13 @@ public:
     
     for( size_t i=0; i < traj->num_states(); i++ )
     {
-      double error_x = traj->x_vec[i][ni_state::X_IND] - traj->x_vec[i][ni_state::XD_IND];
-      double error_y = traj->x_vec[i][ni_state::Y_IND] - traj->x_vec[i][ni_state::YD_IND];
+      state_type state = traj->x_vec[i];
+      
+      double error_x = state.x-state.xd;
+      double error_y = state.y-state.yd;
       
       double error = sqrt(error_x*error_x + error_y*error_y);
-      printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
+      printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
     }
   
     
