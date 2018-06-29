@@ -116,6 +116,45 @@ public:
     double fw_vel = .05;
     double r = .5;
     
+    std::vector<double> temp(5);
+    for(int i=0; i < temp.size(); ++i)
+    {
+      temp[i] = i;
+    }
+    
+//     for(int i=0; i < temp.size(); ++i)
+//     {
+//       std::cout << i << ":\t" << temp[i] <<std::endl;
+//     }
+    
+    std::cout << "temp[1]" << ":\t" << temp[1]<< "should=1" <<std::endl;
+  
+    
+    ElementReference<double> a(temp[1]);
+    
+    double& ad = a;
+    
+    std::cout << "a:\t" << a << "; should=1"<<std::endl;
+    
+    std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
+    
+    temp[1] = 3;
+    std::cout << "temp[1]" << ":\t" << temp[1] << "should=3"<<std::endl;
+    
+    std::cout << "a:\t" << a << "; should=3"<<std::endl;
+    
+    std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
+    
+    ad = 2;
+    
+    std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
+    std::cout << "a:\t" << a << "; should=2"<<std::endl;
+    
+    std::cout << "temp[1]" << ":\t" << temp[1] << "should=2"<<std::endl;
+    
+    pips_trajectory_msgs::trajectory_points t;
+    return t;
+    
     
     if(ros::param::search("r", r_key))
     {
