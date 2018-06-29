@@ -34,7 +34,7 @@
 // %Tag(FULLTEXT)%
 #include <ros/ros.h>
 
-#include <near_identity.h>
+#include <turtlebot_trajectory_generator/near_identity.h>
 #include <trajectory_generator_ros_interface.h>
 
 
@@ -279,4 +279,5 @@ int main(int argc, char **argv)
     return 0;
 
 }
+
 
