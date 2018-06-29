@@ -72,13 +72,13 @@ public:
 
 
 /* The rhs of x' = f(x) defined as a class */
-class sample_traj_func : public virtual desired_traj_func{
+class serpentine_traj_func : public virtual desired_traj_func{
   
   double m_amp;
   double m_f;
   
 public:
-  sample_traj_func( double amp, double f ) : m_amp(amp), m_f(f) { }
+  serpentine_traj_func( double amp, double f ) : m_amp(amp), m_f(f) { }
   
   void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
   {
@@ -145,7 +145,7 @@ public:
 //       std::cout << i << ":\t" << temp[i] <<std::endl;
 //     }
     
-    std::cout << "temp[1]" << ":\t" << temp[1]<< "should=1" <<std::endl;
+    std::cout << "temp" << ":\t" << temp[1]<< "should=1" <<std::endl;
   
     
     ElementReference<double> a(temp[1]);
@@ -162,7 +162,7 @@ public:
     
     
     temp[1] = 3;
-    std::cout << "temp[1]" << ":\t" << temp[1] << "should=3"<<std::endl;
+    std::cout << "temp" << ":\t" << temp[1] << "; should=3"<<std::endl;
     
     std::cout << "a:\t" << a << "; should=3"<<std::endl;
     
@@ -173,10 +173,13 @@ public:
     std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
     std::cout << "a:\t" << a << "; should=2"<<std::endl;
     
-    std::cout << "temp[1]" << ":\t" << temp[1] << "should=2"<<std::endl;
+    std::cout << "temp" << ":\t" << temp[1] << "; should=2"<<std::endl;
     
-    pips_trajectory_msgs::trajectory_points t;
-    return t;
+    
+    
+    
+    //pips_trajectory_msgs::trajectory_points t;
+    //return t;
 //     
 //     
 //     if(ros::param::search("r", r_key))
@@ -189,7 +192,7 @@ public:
 //       ros::param::get(fw_vel_key, fw_vel); 
 //     }
     
-    desired_traj_func::Ptr dtraj = std::make_shared<sample_traj_func>(0.15,.1);
+    desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(0.15,.1);
     //desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
     near_identity ni(100,100,100,.01);    
     traj_func_type::Ptr nc=std::make_shared<traj_func_type>(ni);
@@ -207,6 +210,16 @@ public:
     ROS_INFO_STREAM("Size: " << traj->x_vec.size());
     
     //traj->print();
+    
+    {
+      int i=4;
+    state_type state = traj->x_vec[i];
+    printf("Raw Array Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
+    std::cout << "State Array Access: \n" << state[0] << "\t" << state[1] << "\t" << state[2] << "\t" << state[3] << "\t" << state[4] << "\t" << state[5] << "\t" << state[6] << "\t" << state[7] << std::endl;
+    
+    printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
+    
+    }
     
     
     std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
