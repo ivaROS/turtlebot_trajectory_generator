@@ -70,7 +70,23 @@ public:
 };
 //]
 
- 
+
+/* The rhs of x' = f(x) defined as a class */
+class sample_traj_func : public virtual desired_traj_func{
+  
+  double m_amp;
+  double m_f;
+  
+public:
+  sample_traj_func( double amp, double f ) : m_amp(amp), m_f(f) { }
+  
+  void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
+  {
+    dxdt[6] = 1;
+    dxdt[7] = sin(t*2.0*3.14*m_f) * m_amp;
+  }
+};
+//]
  
  
  
@@ -86,7 +102,7 @@ public:
 private:
   ros::NodeHandle nh_;
   std::string name_;
-  ros::Publisher trajectory_publisher_;
+  ros::Publisher trajectory_publisher_, path_pub_;
   TrajectoryGeneratorBridge<state_type, traj_func_type>  traj_gen_bridge;
   
   
@@ -101,7 +117,9 @@ public:
   bool init()
   {
     trajectory_publisher_ = nh_.advertise< pips_trajectory_msgs::trajectory_points >("/desired_trajectory", 10);
+    path_pub_ = nh_.advertise< nav_msgs::Path>("/desired_path", 10);
     return true;
+    
   };
   /**
    * Set-up necessary publishers/subscribers
@@ -116,58 +134,58 @@ public:
     double fw_vel = .05;
     double r = .5;
     
-    std::vector<double> temp(5);
-    for(int i=0; i < temp.size(); ++i)
-    {
-      temp[i] = i;
-    }
-    
+//     std::vector<double> temp(5);
 //     for(int i=0; i < temp.size(); ++i)
 //     {
-//       std::cout << i << ":\t" << temp[i] <<std::endl;
+//       temp[i] = i;
+//     }
+//     
+// //     for(int i=0; i < temp.size(); ++i)
+// //     {
+// //       std::cout << i << ":\t" << temp[i] <<std::endl;
+// //     }
+//     
+//     std::cout << "temp[1]" << ":\t" << temp[1]<< "should=1" <<std::endl;
+//   
+//     
+//     ElementReference<double> a(temp[1]);
+//     
+//     double& ad = a;
+//     
+//     std::cout << "a:\t" << a << "; should=1"<<std::endl;
+//     
+//     std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
+//     
+//     temp[1] = 3;
+//     std::cout << "temp[1]" << ":\t" << temp[1] << "should=3"<<std::endl;
+//     
+//     std::cout << "a:\t" << a << "; should=3"<<std::endl;
+//     
+//     std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
+//     
+//     ad = 2;
+//     
+//     std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
+//     std::cout << "a:\t" << a << "; should=2"<<std::endl;
+//     
+//     std::cout << "temp[1]" << ":\t" << temp[1] << "should=2"<<std::endl;
+//     
+//     pips_trajectory_msgs::trajectory_points t;
+//     return t;
+//     
+//     
+//     if(ros::param::search("r", r_key))
+//     {
+//       ros::param::get(r_key, r); 
+//     }
+//     
+//     if(ros::param::search("fw_vel", fw_vel_key))
+//     {
+//       ros::param::get(fw_vel_key, fw_vel); 
 //     }
     
-    std::cout << "temp[1]" << ":\t" << temp[1]<< "should=1" <<std::endl;
-  
-    
-    ElementReference<double> a(temp[1]);
-    
-    double& ad = a;
-    
-    std::cout << "a:\t" << a << "; should=1"<<std::endl;
-    
-    std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
-    
-    temp[1] = 3;
-    std::cout << "temp[1]" << ":\t" << temp[1] << "should=3"<<std::endl;
-    
-    std::cout << "a:\t" << a << "; should=3"<<std::endl;
-    
-    std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
-    
-    ad = 2;
-    
-    std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
-    std::cout << "a:\t" << a << "; should=2"<<std::endl;
-    
-    std::cout << "temp[1]" << ":\t" << temp[1] << "should=2"<<std::endl;
-    
-    pips_trajectory_msgs::trajectory_points t;
-    return t;
-    
-    
-    if(ros::param::search("r", r_key))
-    {
-      ros::param::get(r_key, r); 
-    }
-    
-    if(ros::param::search("fw_vel", fw_vel_key))
-    {
-      ros::param::get(fw_vel_key, fw_vel); 
-    }
-    
-        
-    desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
+    desired_traj_func::Ptr dtraj = std::make_shared<sample_traj_func>(0.15,.1);
+    //desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
     near_identity ni(100,100,100,.01);    
     traj_func_type::Ptr nc=std::make_shared<traj_func_type>(ni);
     nc->setTrajFunc(dtraj);
@@ -190,21 +208,32 @@ public:
     
     for( size_t i=0; i < traj->num_states(); i++ )
     {
-      state_type state = traj->x_vec[i];
+      state_type& state = traj->x_vec[i];
       
       double error_x = state.x-state.xd;
       double error_y = state.y-state.yd;
       
       double error = sqrt(error_x*error_x + error_y*error_y);
+      //NOTE: This doesn't work, for some reason
       printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
     }
   
+  for( size_t i=0; i < traj->num_states(); i++ )
+  {
+    double error_x = traj->x_vec[i][ni_state::X_IND] - traj->x_vec[i][ni_state::XD_IND];
+    double error_y = traj->x_vec[i][ni_state::Y_IND] - traj->x_vec[i][ni_state::YD_IND];
     
+    double error = sqrt(error_x*error_x + error_y*error_y);
+    printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
+  }
     
     
     pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toMsg ();
     trajectory_publisher_.publish(trajectory_msg);
-        
+    
+    nav_msgs::Path::ConstPtr path_msg = traj->toPathMsg();    
+    path_pub_.publish(path_msg);
+    
     return trajectory_msg;
   }
   
@@ -230,7 +259,7 @@ int main(int argc, char **argv)
 
     if (tester.init())
     {
-      while(ros::ok())
+      //while(ros::ok())
       {
         tester.generate_trajectory();
         ros::spinOnce();
