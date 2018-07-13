@@ -11,6 +11,7 @@
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 #include <pips_trajectory_msgs/trajectory_point.h>
 #include <pips_trajectory_msgs/trajectory_points.h>
 #include <tf/transform_datatypes.h>
@@ -35,8 +36,9 @@ public:
     lambda(data,ni_state::LAMBDA_IND),
     xd(data,ni_state::XD_IND),
     yd(data,ni_state::YD_IND)
-    {
-    }
+  {
+    lambda = .1;
+  }
     
   ni_state(const ni_state& state) : 
     TrajectoryState(state),
@@ -49,12 +51,74 @@ public:
     xd(data,ni_state::XD_IND),
     yd(data,ni_state::YD_IND)
   {
-      
+    lambda = .1;
+  }
+  
+  template <typename T>
+  ni_state(const T& state) : 
+    TrajectoryState(),
+    x(data,ni_state::X_IND),
+    y(data,ni_state::Y_IND),
+    theta(data,ni_state::THETA_IND),
+    v(data,ni_state::V_IND),
+    w(data,ni_state::W_IND),
+    lambda(data,ni_state::LAMBDA_IND),
+    xd(data,ni_state::XD_IND),
+    yd(data,ni_state::YD_IND)
+  {
+    from(state);
+    lambda = .1;
+  }
+  
+  void operator=(const ni_state& state)
+  {
+    data = state.data;
   }
   
   bool isValid()
   {
     return !(lambda ==0);
+  }
+  
+  
+  void from(const geometry_msgs::Point& point)
+  {
+    x = point.x;
+    y = point.y;
+  }
+  
+  void from(const geometry_msgs::Quaternion& quaternion)
+  {
+    // the incoming geometry_msgs::Quaternion is transformed to a tf::Quaterion
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(quaternion, quat);
+    
+    // the tf::Quaternion has a method to acess roll pitch and yaw
+    double roll, pitch, yaw;
+    tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    
+    theta = yaw;
+  }
+  
+  void from(const geometry_msgs::Twist& twist)
+  {
+    v = twist.linear.x;
+    w = twist.angular.z;
+  }
+  
+  //Note: the following conversions are generic and could probably be moved higher,
+  //but would require adding some (slight) dependencies to trajectory_generator.h
+  //Ideally, this functionality would be added in a different file that could be
+  void from(const geometry_msgs::Pose& pose)
+  {
+    from(pose.position);
+    from(pose.orientation);
+  }
+  
+  void from(const nav_msgs::Odometry& odom)
+  {
+    //from(odom.pose.pose);
+    from(odom.twist.twist);
   }
   
   //Implement any and all conversion methods
@@ -238,6 +302,8 @@ public:
     near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
 
     near_identity( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon), v_max_(v_max), w_max_(w_max), a_max_(a_max), w_dot_max_(w_dot_max) { }
+    
+    //TODO: Add constructor that takes in dynamic config object with parameters?
 
     void operator() ( const ni_state &state , ni_state &state_dot, const double /* t*/  )
     {

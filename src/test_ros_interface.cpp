@@ -284,13 +284,14 @@ int main(int argc, char **argv)
     kobuki::TrajectoryGeneratorBridgeTester tester(nh,name);
     
 
-
+    ros::Duration d(15);
     if (tester.init())
     {
       while(ros::ok())
       {
         tester.generate_trajectory();
         ros::spinOnce();
+        d.sleep();
       }
     }
     else
