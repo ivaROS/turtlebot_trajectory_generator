@@ -75,15 +75,16 @@ public:
 /* The rhs of x' = f(x) defined as a class */
 class serpentine_traj_func : public virtual desired_traj_func{
   
+  double m_v;
   double m_amp;
   double m_f;
   
 public:
-  serpentine_traj_func( double amp, double f ) : m_amp(amp), m_f(f) { }
+  serpentine_traj_func( double v, double amp, double f ) : m_v(v), m_amp(amp), m_f(f) { }
   
   void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
   {
-    dxdt[6] = 1;
+    dxdt[6] = m_v;
     dxdt[7] = sin(t*2.0*3.14*m_f) * m_amp;
   }
 };
@@ -198,7 +199,7 @@ public:
 //       ros::param::get(fw_vel_key, fw_vel); 
 //     }
     
-    desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(0.15,.1);
+    desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(.2,0.15,.2);
     //desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
     near_identity ni(100,100,100,.01);    
     traj_func_type::Ptr nc=std::make_shared<traj_func_type>(ni);
@@ -209,7 +210,11 @@ public:
     traj->header.frame_id = "base_footprint";
     traj->header.stamp = ros::Time::now();
     traj->trajpntr = nc ;
+    traj->params = std::make_shared<traj_params>();
+    traj->params->tf=15;
     traj->x0_[ni_state::LAMBDA_IND]=.3;
+    traj->x0_.yd=1;
+    traj->x0_.xd=1;
     
     traj_gen_bridge.generate_trajectory(traj);
     
@@ -283,6 +288,8 @@ int main(int argc, char **argv)
     std::string name = ros::this_node::getName();
     kobuki::TrajectoryGeneratorBridgeTester tester(nh,name);
     
+    ros::Duration t(2);
+    t.sleep();
 
     ros::Duration d(15);
     if (tester.init())
