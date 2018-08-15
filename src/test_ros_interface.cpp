@@ -133,8 +133,8 @@ public:
   pips_trajectory_msgs::trajectory_points generate_trajectory()
   {
     std::string r_key, fw_vel_key;
-    double fw_vel = .05;
-    double r = .5;
+    double fw_vel = .25;
+    double r = 5;
     
     
 //     {
@@ -199,8 +199,8 @@ public:
 //       ros::param::get(fw_vel_key, fw_vel); 
 //     }
     
-    desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(.2,0.15,.2);
-    //desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
+    //desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(.2,0.15,.2);
+    desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
     near_identity ni(100,100,100,.01);    
     traj_func_type::Ptr nc=std::make_shared<traj_func_type>(ni);
     nc->setTrajFunc(dtraj);
@@ -211,7 +211,7 @@ public:
     traj->header.stamp = ros::Time::now();
     traj->trajpntr = nc ;
     traj->params = std::make_shared<traj_params>();
-    traj->params->tf=15;
+    traj->params->tf=150;
     traj->x0_[ni_state::LAMBDA_IND]=.3;
     traj->x0_.yd=1;
     traj->x0_.xd=1;
@@ -291,7 +291,7 @@ int main(int argc, char **argv)
     ros::Duration t(2);
     t.sleep();
 
-    ros::Duration d(15);
+    ros::Duration d(150);
     if (tester.init())
     {
       while(ros::ok())
