@@ -141,6 +141,11 @@ target_link_libraries(test_ros_interface
   ${catkin_LIBRARIES}
 )
 
+add_executable(test_path_to_trajectory src/test_path_to_trajectory.cpp )
+target_link_libraries(test_path_to_trajectory
+  ${catkin_LIBRARIES}
+)
+
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
