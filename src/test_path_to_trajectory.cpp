@@ -174,7 +174,18 @@ public:
     const nav_msgs::OdometryConstPtr odom = cur_odom_;
     
     //Ensure that path is in odometry frame_id
-    const nav_msgs::Path path_t = tfBuffer_->transform(*input_path_msg, odom->header.frame_id, odom->header.stamp,"map");
+    nav_msgs::Path path_t;
+    
+    try
+    {
+      path_t = tfBuffer_->transform(*input_path_msg, odom->header.frame_id, odom->header.stamp,"map");
+    }
+    catch (tf2::TransformException &ex) 
+    {
+      ROS_WARN_STREAM("Error transforming path: from [" << input_path_msg->header.frame_id << "](" << input_path_msg->header.stamp << ") to " << odom->header.frame_id << "](" << odom->header.stamp << "): " << ex.what());
+      return;
+    }
+    
     transformed_path_pub_.publish(path_t);
 /*    
     double px, py, pth;
@@ -202,7 +213,7 @@ public:
     double a_max=.55;
     double w_dot_max=1.78;
     
-    near_identity ni(100,100,100,.01);//,v_max,w_max,a_max,w_dot_max);    
+    near_identity ni(1,5,1,.01,v_max,w_max,a_max,w_dot_max);    
     traj_func_type::Ptr nc=std::make_shared<traj_func_type>(ni);
     nc->setTrajFunc(dtraj);
     
