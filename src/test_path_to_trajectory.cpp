@@ -178,7 +178,7 @@ public:
     
     try
     {
-      path_t = tfBuffer_->transform(*input_path_msg, odom->header.frame_id, odom->header.stamp,"map");
+      path_t = tfBuffer_->transform(*input_path_msg, odom->header.frame_id, input_path_msg->header.stamp,"map"); //should be 'odom->header.stamp', but can't always transform from map to odom for that time
     }
     catch (tf2::TransformException &ex) 
     {
