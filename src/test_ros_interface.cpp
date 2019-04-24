@@ -136,69 +136,6 @@ public:
     double fw_vel = .25;
     double r = 5;
     
-    
-//     {
-//       state_type state;
-//       
-//       for(int i=0; i < 8; ++i)
-//       {
-//         state[i] = i;
-//       }
-// 
-//       std::cout << "State Array Access: \n" << state[0] << "\t" << state[1] << "\t" << state[2] << "\t" << state[3] << "\t" << state[4] << "\t" << state[5] << "\t" << state[6] << "\t" << state[7] << std::endl;
-//       std::cout << "State Element Access: \n" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
-//       
-      //printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
-      
-      
-//       std::cout << "temp" << ":\t" << temp[1]<< "should=1" <<std::endl;
-//     
-//       
-//       ElementReference<double> a(temp[1]);
-//       
-//       double& ad = a;
-//       
-//       double c = a;
-//       
-//       std::cout << "a:\t" << a << "; should=1"<<std::endl;
-//       
-//       std::cout << "ad:\t" << ad << "; should=1"<<std::endl;
-//       
-//       std::cout << "c:\t" << c << "; should=1"<<std::endl;
-//       
-//       
-//       temp[1] = 3;
-//       std::cout << "temp" << ":\t" << temp[1] << "; should=3"<<std::endl;
-//       
-//       std::cout << "a:\t" << a << "; should=3"<<std::endl;
-//       
-//       std::cout << "ad:\t" << ad << "; should=3"<<std::endl;
-//       
-//       ad = 2;
-//       
-//       std::cout << "ad:\t" << ad << "; should=2"<<std::endl;
-//       std::cout << "a:\t" << a << "; should=2"<<std::endl;
-//       
-//       std::cout << "temp" << ":\t" << temp[1] << "; should=2"<<std::endl;
-//       
-//     }
-    
-    
-    
-    //pips_trajectory_msgs::trajectory_points t;
-    //return t;
-//     
-//     
-//     if(ros::param::search("r", r_key))
-//     {
-//       ros::param::get(r_key, r); 
-//     }
-//     
-//     if(ros::param::search("fw_vel", fw_vel_key))
-//     {
-//       ros::param::get(fw_vel_key, fw_vel); 
-//     }
-    
     //desired_traj_func::Ptr dtraj = std::make_shared<serpentine_traj_func>(.2,0.15,.2);
     desired_traj_func::Ptr dtraj = std::make_shared<circle_traj_func>(fw_vel,r);
     near_identity ni(100,100,100,.01);    
@@ -220,22 +157,6 @@ public:
     
     ROS_INFO_STREAM("Size: " << traj->x_vec.size());
     
-    //traj->print();
-    
-//     {
-//       int i=4;
-//       std::cout << "For state " << i << ":" << std::endl;
-//       
-//     const state_type& state = traj->x_vec[i];
-//     printf("Raw Array Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
-//     std::cout << "State Array Access: \n" << state[0] << "\t" << state[1] << "\t" << state[2] << "\t" << state[3] << "\t" << state[4] << "\t" << state[5] << "\t" << state[6] << "\t" << state[7] << std::endl;
-//     std::cout << "State Element Access: \n" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
-//     
-//     //printf("Element Access:\n%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", state.x,state.y, state.theta, state.v, state.w, state.lambda,state.xd, state.yd);
-//     std::cout << std::endl << std::endl;
-//     
-//     }
-
     
     std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
     
@@ -250,7 +171,8 @@ public:
       //NOTE: This doesn't work, for some reason
       std::cout << std::fixed << std::setw(4) <<std::setprecision(4) << traj->times[i] << "\t" << error << "\t" << state.x << "\t" << state.y << "\t" << state.theta << "\t" << state.v << "\t" << state.w << "\t" << state.lambda << "\t" << state.xd << "\t" << state.yd << std::endl;
     }
- /* 
+    
+ 
   for( size_t i=0; i < traj->num_states(); i++ )
   {
     double error_x = traj->x_vec[i][ni_state::X_IND] - traj->x_vec[i][ni_state::XD_IND];
@@ -258,7 +180,7 @@ public:
     
     double error = sqrt(error_x*error_x + error_y*error_y);
     printf("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n", traj->times[i], error, traj->x_vec[i][0],traj-> x_vec[i][1], traj->x_vec[i][2], traj->x_vec[i][3], traj->x_vec[i][4], traj->x_vec[i][5],traj->x_vec[i][6], traj->x_vec[i][7]);
-  }*/
+  }
     
     
     pips_trajectory_msgs::trajectory_points trajectory_msg = traj->toMsg ();

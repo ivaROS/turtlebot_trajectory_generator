@@ -2,24 +2,24 @@ cmake_minimum_required(VERSION 2.8.3)
 project(turtlebot_trajectory_generator)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
- add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  std_msgs
-  nav_msgs
-  geometry_msgs
-  tf
+#   roscpp
+#   std_msgs
+#   nav_msgs
+#   geometry_msgs
+#   tf
   pips_trajectory_msgs
   pips_msgs
   trajectory_generator
 )
 
-find_package(Boost REQUIRED COMPONENTS system)
-find_package(Eigen3 REQUIRED)
+# find_package(Boost REQUIRED COMPONENTS system)
+# find_package(Eigen3 REQUIRED)
 
 
 ## System dependencies are found with CMake's conventions
@@ -115,7 +115,7 @@ catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES turtlebot_trajectory_generator
   CATKIN_DEPENDS geometry_msgs nav_msgs pips_trajectory_msgs trajectory_generator
-#  DEPENDS system_lib
+#  DEPENDS Boost
 )
 
 ###########
@@ -141,10 +141,10 @@ target_link_libraries(test_ros_interface
   ${catkin_LIBRARIES}
 )
 
-add_executable(test_path_to_trajectory src/test_path_to_trajectory.cpp )
-target_link_libraries(test_path_to_trajectory
-  ${catkin_LIBRARIES}
-)
+# add_executable(test_path_to_trajectory src/test_path_to_trajectory.cpp )
+# target_link_libraries(test_path_to_trajectory
+#   ${catkin_LIBRARIES}
+# )
 
 
 ## Declare a C++ library

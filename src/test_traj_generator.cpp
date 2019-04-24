@@ -1,5 +1,5 @@
 #include <traj_generator.h>
-#include <near_identity.h>
+#include <turtlebot_trajectory_generator/near_identity.h>
 
 #include <iostream>
 #include <sstream>
