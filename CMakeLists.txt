@@ -43,7 +43,6 @@ include_directories(
 add_executable(test_traj_generator src/test_traj_generator.cpp )
 target_link_libraries(test_traj_generator
   ${catkin_LIBRARIES}
-  ${EIGEN3_LIBS}
  )
 
 add_executable(test_ros_interface src/test_ros_interface.cpp )
