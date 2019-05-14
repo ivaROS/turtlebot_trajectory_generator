@@ -41,7 +41,7 @@
 #include <iomanip>      // std::setprecision
 
 
-namespace kobuki
+namespace turtlebot_trajectory_generator
 {
 
 /**
@@ -63,8 +63,8 @@ public:
     void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
     {
         
-        dxdt[ni_state::XD_IND] = -vf_*sin((vf_/r_) * t);
-        dxdt[ni_state::YD_IND] = vf_*cos((vf_/r_) * t);
+        dxdt.xd = -vf_*sin((vf_/r_) * t);
+        dxdt.yd = vf_*cos((vf_/r_) * t);
     }
     
     
@@ -84,8 +84,8 @@ public:
   
   void dState ( const ni_state &x , ni_state &dxdt , const double  t  )
   {
-    dxdt[6] = m_v;
-    dxdt[7] = sin(t*2.0*3.14*m_f) * m_amp;
+    dxdt.xd = m_v;
+    dxdt.yd = sin(t*2.0*3.14*m_f) * m_amp;
   }
 };
 //]
@@ -97,7 +97,7 @@ class TrajectoryGeneratorBridgeTester
 public:
   typedef ni_state state_type;
   typedef ni_controller traj_func_type;
-  typedef trajectory_states<state_type, traj_func_type> traj_type;
+  typedef trajectory_generator::trajectory_states<state_type, traj_func_type> traj_type;
   typedef std::shared_ptr<traj_type> traj_type_ptr;
   
   
@@ -105,7 +105,7 @@ private:
   ros::NodeHandle nh_;
   std::string name_;
   ros::Publisher trajectory_publisher_, path_pub_;
-  TrajectoryGeneratorBridge<state_type, traj_func_type>  traj_gen_bridge;
+  trajectory_generator::TrajectoryGeneratorBridge<state_type, traj_func_type>  traj_gen_bridge;
   
   
   
@@ -147,7 +147,7 @@ public:
     traj->header.frame_id = "base_footprint";
     traj->header.stamp = ros::Time::now();
     traj->trajpntr = nc ;
-    traj->params = std::make_shared<traj_params>();
+    traj->params = std::make_shared<trajectory_generator::traj_params>();
     traj->params->tf=150;
     traj->x0_[ni_state::LAMBDA_IND]=.3;
     traj->x0_.yd=1;
@@ -198,7 +198,7 @@ public:
 
 
 
-} // namespace kobuki
+} // namespace turtlebot_trajectory_generator
 // %EndTag(FULLTEXT)%
 
 
@@ -208,7 +208,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "test_ros_interface");
     ros::NodeHandle nh;
     std::string name = ros::this_node::getName();
-    kobuki::TrajectoryGeneratorBridgeTester tester(nh,name);
+    turtlebot_trajectory_generator::TrajectoryGeneratorBridgeTester tester(nh,name);
     
     ros::Duration t(2);
     t.sleep();

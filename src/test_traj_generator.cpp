@@ -9,7 +9,8 @@
 
 
 
-
+namespace turtlebot_trajectory_generator
+{
 
 
 
@@ -33,15 +34,14 @@ public:
 };
 //]
 
+} //namespace turtlebot_trajectory_generator
 
 
 int main(int  argc  , char**  argv  )
 {
-    using namespace std;
-
 
     //[ initial state
-    ni_state x0; 
+    turtlebot_trajectory_generator::ni_state x0; 
     x0[0] = 1.0; //x
     x0[1] =-2.0; //y
     x0[2] = 0.0; //theta
@@ -57,28 +57,28 @@ int main(int  argc  , char**  argv  )
 
     //double abs_err_ = 1.0e-10 , rel_err_ = 1.0e-6 , a_x_ = 1.0 , a_dxdt_ = 1.0;
     
-    traj_generator<ni_state, ni_controller> trajectory_gen;
-    desired_traj_func::Ptr traj = std::make_shared<sample_traj_func>(0.15,.1);
+    turtlebot_trajectory_generator::TrajectoryGenerator trajectory_gen;
+    turtlebot_trajectory_generator::desired_traj_func::Ptr traj = std::make_shared<turtlebot_trajectory_generator::sample_traj_func>(0.15,.1);
     
-    near_identity ni(100,100,100,.01);    
-    ni_controller nc(ni);
+    turtlebot_trajectory_generator::near_identity ni(1,5,1,.01);    
+    turtlebot_trajectory_generator::ni_controller nc(ni);
     nc.setTrajFunc(traj);
         
     
     //[ Observer samples
-    vector<ni_state> x_vec;
-    vector<double> times;
+    std::vector<turtlebot_trajectory_generator::ni_state> x_vec;
+    std::vector<double> times;
     
     size_t steps;
 
-    traj_params params = trajectory_gen.getDefaultParams();
+    trajectory_generator::traj_params params = trajectory_gen.getDefaultParams();
     if(argc==2)
     {
 
-      istringstream ss(argv[1]);
+      std::istringstream ss(argv[1]);
       double tf;
       if (!(ss >> tf))
-          cerr << "Invalid number " << argv[1] << '\n';
+          std::cerr << "Invalid number " << argv[1] << '\n';
       else
         params.tf = tf;
     }
@@ -105,7 +105,7 @@ int main(int  argc  , char**  argv  )
     std::cout << "Time" << '\t' << "Error" << '\t' << 'x' << '\t' << 'y' << '\t' << "theta" << '\t' << 'v' << '\t' << 'w' << '\t' << "lambda" << '\t' << "xd" << '\t' << "yd" << std::endl;
     
     int i = 0;
-    for(ni_state state : x_vec)
+    for(turtlebot_trajectory_generator::ni_state state : x_vec)
     {
       double error_x = state[0] - state[6];
       double error_y = state[1] - state[7];

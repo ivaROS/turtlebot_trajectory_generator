@@ -16,8 +16,10 @@
 #include <pips_trajectory_msgs/trajectory_points.h>
 #include <tf/transform_datatypes.h>
 
+namespace turtlebot_trajectory_generator
+{
 
-class ni_state : public TrajectoryState<ni_state,8>
+class ni_state : public trajectory_generator::TrajectoryState<ni_state,8>
 {
 public:
   enum STATE_INDICIES { X_IND=0, Y_IND=1, THETA_IND=2, V_IND=3, W_IND=4, LAMBDA_IND=5, XD_IND=6, YD_IND=7 };
@@ -25,7 +27,7 @@ public:
   typedef pips_trajectory_msgs::trajectory_points trajectory_msg_t;
   
   //decltype(data)
-  VectorReference<std::vector<double> > x,y,theta,v,w,lambda,xd,yd;
+  trajectory_generator::VectorReference<std::vector<double> > x,y,theta,v,w,lambda,xd,yd;
   
   ni_state() :
     x(data,ni_state::X_IND),
@@ -491,7 +493,7 @@ public:
   virtual void dState ( const ni_state &x , ni_state &dxdt , const double  t  )=0;
   
   
-  typedef std::shared_ptr< ::desired_traj_func> Ptr;
+  typedef std::shared_ptr<desired_traj_func> Ptr;
   
 };
 //]
@@ -500,7 +502,7 @@ public:
 
 //[ rhs_class
 /* The rhs of x' = f(x) defined as a class */
-class ni_controller : public traj_func<ni_controller, ni_state>
+class ni_controller : public trajectory_generator::traj_func<ni_controller, ni_state>
 {
   
   near_identity ni_;
@@ -523,10 +525,14 @@ public:
     ni_(x,dxdt,t);
   }
   
-  typedef std::shared_ptr< ::ni_controller> Ptr;
+  typedef std::shared_ptr<ni_controller> Ptr;
   
 };
 
+typedef trajectory_generator::traj_generator<ni_state, ni_controller> TrajectoryGenerator;
+
+
+} //namespace turtlebot_trajectory_generator
 
 #endif  /* !near_identity.h sen */
 
