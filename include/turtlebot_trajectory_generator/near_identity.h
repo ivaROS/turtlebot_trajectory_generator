@@ -27,7 +27,7 @@ public:
   typedef pips_trajectory_msgs::trajectory_points trajectory_msg_t;
   
   //decltype(data)
-  trajectory_generator::VectorReference<std::vector<double> > x,y,theta,v,w,lambda,xd,yd;
+  trajectory_generator::VectorReference<array> x,y,theta,v,w,lambda,xd,yd;
   
   ni_state() :
     x(data,ni_state::X_IND),
@@ -529,7 +529,10 @@ public:
   
 };
 
-typedef trajectory_generator::traj_generator<ni_state, ni_controller> TrajectoryGenerator;
+typedef ni_state state_type;
+typedef ni_controller traj_func_type;
+typedef trajectory_generator::traj_generator<state_type, traj_func_type> TrajectoryGenerator;
+typedef turtlebot_trajectory_generator::desired_traj_func::Ptr des_traj_func_ptr;
 
 
 } //namespace turtlebot_trajectory_generator
