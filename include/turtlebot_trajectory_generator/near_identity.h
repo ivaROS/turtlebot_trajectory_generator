@@ -53,7 +53,7 @@ public:
     xd(data,ni_state::XD_IND),
     yd(data,ni_state::YD_IND)
   {
-    lambda = .1;
+//    lambda = .1; //shouldn't overwrite existing lambda value
   }
   
   template <typename T>
@@ -139,11 +139,13 @@ public:
     quat = tf::createQuaternionMsgFromRollPitchYaw(roll, pitch, yaw);
   }
   
+  //if this function isn't implemented, falls back on 'to(geometry_msgs::Point& point)'
   void to(trajectory_generator::Desired<geometry_msgs::Point>& point)
   {
     geometry_msgs::Point& pt=point;
     pt.x=xd;
     pt.y=yd;
+    pt.z=0;
   }
   
   pips_trajectory_msgs::trajectory_point toMsg()
@@ -159,30 +161,52 @@ public:
   }
 };
   
-
+struct ni_params
+{
+  ni_params() {}
+  ni_params( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
+  ni_params( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon), v_max_(v_max), w_max_(w_max), a_max_(a_max), w_dot_max_(w_dot_max) { }
+  
+  double c_p_;
+  double c_d_;
+  double c_lambda_;
+  double epsilon_;
+  
+  double v_max_ = std::numeric_limits<double>::infinity();
+  double w_max_ = std::numeric_limits<double>::infinity();
+  double a_max_ = std::numeric_limits<double>::infinity();
+  double w_dot_max_ = std::numeric_limits<double>::infinity();
+  
+  bool verify()
+  {
+    //TODO: Add ROS_ASSERTs for each of these to enable explicit errors about these at run time and not in Release builds
+    return c_p_>=0 && c_d_>=0 && c_lambda_>=0 && epsilon_>0
+            && v_max_>0 && w_max_>0 && a_max_>0 && w_dot_max_>0;
+  }
+};
 
 class near_identity {
 
+    ni_params params_;
 
-
-    double c_p_;
-    double c_d_;
-    double c_lambda_;
-    double epsilon_;
-    
-    double v_max_ = std::numeric_limits<double>::infinity();
-    double w_max_ = std::numeric_limits<double>::infinity();
-    double a_max_ = std::numeric_limits<double>::infinity();
-    double w_dot_max_ = std::numeric_limits<double>::infinity();
+//     double c_p_;
+//     double c_d_;
+//     double c_lambda_;
+//     double epsilon_;
+//     
+//     double v_max_ = std::numeric_limits<double>::infinity();
+//     double w_max_ = std::numeric_limits<double>::infinity();
+//     double a_max_ = std::numeric_limits<double>::infinity();
+//     double w_dot_max_ = std::numeric_limits<double>::infinity();
 
 public:
 
     
-    near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon) { }
+    near_identity( double c_p, double c_d, double c_lambda, double epsilon ) : params_(c_p, c_d, c_lambda, epsilon) { }
 
-    near_identity( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : c_p_(c_p), c_d_(c_d), c_lambda_(c_lambda), epsilon_(epsilon), v_max_(v_max), w_max_(w_max), a_max_(a_max), w_dot_max_(w_dot_max) { }
+    near_identity( double c_p, double c_d, double c_lambda, double epsilon, double v_max, double w_max, double a_max, double w_dot_max ) : params_(c_p, c_d, c_lambda, epsilon, v_max, w_max, a_max, w_dot_max) { }
     
-    //TODO: Add constructor that takes in dynamic config object with parameters?
+    near_identity( ni_params params) : params_(params) {}
 
     void operator() ( const ni_state &state , ni_state &state_dot, const double /* t*/  )
     {
@@ -202,7 +226,7 @@ public:
         R << cos(theta), -sin(theta), 
              sin(theta), cos(theta);
              
-        double lambda_dot = -c_lambda_*(lambda - epsilon_);
+        double lambda_dot = -params_.c_lambda_*(lambda - params_.epsilon_);
         
 
         //Now find derivatives of state variables
@@ -236,7 +260,7 @@ public:
         R << cos(theta), -sin(theta), 
              sin(theta), cos(theta);
              
-        double lambda_dot = -c_lambda_*(lambda - epsilon_);
+        double lambda_dot = -params_.c_lambda_*(lambda - params_.epsilon_);
         return getTau(x,y,theta,v,w,lambda,x_d,y_d,x_d_dot,y_d_dot,R,lambda_dot);
     }
     
@@ -292,12 +316,12 @@ public:
         
         //u can be any expression that will feedback stabilize a linear system
         //here, using 2nd order feedback controller   ; + x_d_dot_dot
-        Eigen::Vector2d u = -c_p_*(q - xy_d) - c_d_*(p - xy_d_dot);
+        Eigen::Vector2d u = -params_.c_p_*(q - xy_d) - params_.c_d_*(p - xy_d_dot);
 
    //     std::cout << "u: " << u(0) << ", " << u(1) << std::endl;
 
         //Now find tau
-        Eigen::Vector2d tau = R_lambda_inv*u - w_hat*vw - lambda_dot*(w_hat - c_lambda_*Eigen::Matrix2d::Identity())*Eigen::Matrix<double, 2, 1>::Identity();
+        Eigen::Vector2d tau = R_lambda_inv*u - w_hat*vw - lambda_dot*(w_hat - params_.c_lambda_*Eigen::Matrix2d::Identity())*Eigen::Matrix<double, 2, 1>::Identity();
         
         return tau;
    
@@ -343,13 +367,13 @@ public:
     inline
     double limitV(const Eigen::Vector2d& tau, double v)
     {
-        return applyLimits(tau[0], v, -v_max_, v_max_, -a_max_, a_max_);
+        return applyLimits(tau[0], v, -params_.v_max_, params_.v_max_, -params_.a_max_, params_.a_max_);
     }
     
     inline
     double limitW(const Eigen::Vector2d& tau, double w)
     {
-        return applyLimits(tau[1], w, -w_max_, w_max_, -w_dot_max_, w_dot_max_);
+        return applyLimits(tau[1], w, -params_.w_max_, params_.w_max_, -params_.w_dot_max_, params_.w_dot_max_);
     }
 };
 
@@ -389,7 +413,7 @@ class ni_controller : public trajectory_generator::traj_func<ni_controller, ni_s
 public:
   ni_controller( near_identity ni) :  ni_(ni) { }
   
-  void setTrajFunc(desired_traj_func::Ptr& traj)
+  void setTrajFunc(const desired_traj_func::Ptr& traj)
   {
     traj_ = traj;
   }
