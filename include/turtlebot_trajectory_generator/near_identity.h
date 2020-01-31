@@ -252,6 +252,8 @@ public:
 
     }
     
+private:
+    
     inline
     Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot )
     {
@@ -266,6 +268,7 @@ public:
     
     
     inline
+    __attribute__((always_inline))
     Eigen::Vector2d getTau( double x, double y, double theta, double v, double w, double lambda, double x_d, double y_d, double x_d_dot, double y_d_dot, const Eigen::Matrix2d& R, double lambda_dot )
     {
         Eigen::Vector2d xy;

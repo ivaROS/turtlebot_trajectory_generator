@@ -149,7 +149,7 @@ public:
     traj->trajpntr = nc ;
     traj->params = std::make_shared<trajectory_generator::traj_params>();
     traj->params->tf=150;
-    traj->x0_[ni_state::LAMBDA_IND]=.3;
+    traj->x0_.lambda=.3;
     traj->x0_.yd=1;
     traj->x0_.xd=1;
     

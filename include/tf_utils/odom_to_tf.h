@@ -43,6 +43,7 @@ namespace tf_utils
     }
   }
   
+  //NOTE: This function is likely redundant given above function
   inline
   bool AddToBuffer(const nav_msgs::Odometry::ConstPtr odom, std::shared_ptr<tf2::BufferCore> buffer, const std::string& authority)
   {
